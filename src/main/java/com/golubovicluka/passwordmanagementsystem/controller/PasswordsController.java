@@ -29,10 +29,12 @@ public class PasswordsController {
 
         ObservableList<PasswordEntry> mockData = FXCollections.observableArrayList(
             new PasswordEntry("john.doe", "********", "facebook.com"),
-            new PasswordEntry("jane.smith", "********", "twitter.com"),
+            new PasswordEntry("jane.smith", "********", "x.com"),
             new PasswordEntry("bob.wilson", "********", "linkedin.com"),
-            new PasswordEntry("alice.wonder", "********", "instagram.com"),
-            new PasswordEntry("mike.ross", "********", "github.com")
+            new PasswordEntry("alice.wonder", "********", "neetcode.com"),
+            new PasswordEntry("mike.ross", "********", "udemy.com"),
+            new PasswordEntry("pera.peric", "********", "leetcode.com"),
+            new PasswordEntry("luka.golubovic", "********", "github.com")
         );
 
         passwordTable.setItems(mockData);
