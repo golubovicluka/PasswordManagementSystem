@@ -31,7 +31,7 @@ public class LoginController {
 
     private void handleLogin() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/passwords-view.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 600);
             
             Stage stage = (Stage) loginButton.getScene().getWindow();
@@ -45,7 +45,7 @@ public class LoginController {
 
     private void handleRegister() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/register-view.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/register-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 400, 300);
             
             Stage stage = (Stage) registerButton.getScene().getWindow();

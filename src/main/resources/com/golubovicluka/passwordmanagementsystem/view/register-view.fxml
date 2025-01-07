@@ -5,20 +5,20 @@
 <?import javafx.scene.layout.*?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.golubovicluka.passwordmanagementsystem.controller.LoginController"
-      stylesheets="@styles/style.css">
+      fx:controller="com.golubovicluka.passwordmanagementsystem.controller.RegisterController"
+      stylesheets="@../styles/style.css">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label text="Password Management System" styleClass="title-label"/>
-    <Label text="Enter your username and password"/>
+    <Label text="Register New Account" styleClass="title-label"/>
     
     <TextField fx:id="usernameField" promptText="Username"/>
     <PasswordField fx:id="passwordField" promptText="Password"/>
+    <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password"/>
     
     <HBox spacing="10" alignment="CENTER">
-        <Button fx:id="loginButton" text="Login"/>
         <Button fx:id="registerButton" text="Register"/>
+        <Button fx:id="backToLoginButton" text="Back to Login"/>
     </HBox>
 </VBox> 

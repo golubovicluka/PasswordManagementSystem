@@ -40,7 +40,7 @@ public class RegisterController {
 
     private void backToLogin() {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/login-view.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/login-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 400, 300);
             
             Stage stage = (Stage) backToLoginButton.getScene().getWindow();

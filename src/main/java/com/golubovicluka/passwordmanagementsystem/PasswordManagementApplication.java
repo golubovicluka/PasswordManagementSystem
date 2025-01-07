@@ -10,8 +10,12 @@ import java.io.IOException;
 public class PasswordManagementApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(PasswordManagementApplication.class.getResource("login-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 400, 300);
+        FXMLLoader fxmlLoader = new FXMLLoader(PasswordManagementApplication.class.getResource("view/login-view.fxml"));
+        Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+        String css = this.getClass().getResource("styles/style.css").toExternalForm();
+        scene.getStylesheets().add(css);
+
         stage.setTitle("Password Management - Login");
         stage.setScene(scene);
         stage.show();
