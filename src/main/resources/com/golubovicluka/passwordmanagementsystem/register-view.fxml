@@ -5,12 +5,13 @@
 <?import javafx.scene.layout.*?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.golubovicluka.passwordmanagementsystem.controller.RegisterController">
+      fx:controller="com.golubovicluka.passwordmanagementsystem.controller.RegisterController"
+      stylesheets="@styles/style.css">
     <padding>
         <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
     </padding>
 
-    <Label text="Register New Account"/>
+    <Label text="Register New Account" styleClass="title-label"/>
     
     <TextField fx:id="usernameField" promptText="Username"/>
     <PasswordField fx:id="passwordField" promptText="Password"/>
