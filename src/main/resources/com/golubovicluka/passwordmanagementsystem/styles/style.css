@@ -67,4 +67,13 @@
 .table-view .column-header .label {
     -fx-text-fill: white;
     -fx-font-weight: bold;
+}
+
+.error-label {
+    -fx-text-fill: #f44336;
+    -fx-font-size: 12px;
+}
+
+.error-field {
+    -fx-border-color: #f44336;
 } 

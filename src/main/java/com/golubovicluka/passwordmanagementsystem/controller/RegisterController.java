@@ -13,16 +13,16 @@ import java.io.IOException;
 public class RegisterController {
     @FXML
     private TextField usernameField;
-    
+
     @FXML
     private PasswordField passwordField;
-    
+
     @FXML
     private PasswordField confirmPasswordField;
-    
+
     @FXML
     private Button registerButton;
-    
+
     @FXML
     private Button backToLoginButton;
 
@@ -34,21 +34,23 @@ public class RegisterController {
 
     private void handleRegister() {
         // TODO: Add registration logic here
-        // For now, just go back to login page
+        System.out.println("handleRegister() in register controller");
         backToLogin();
     }
 
     private void backToLogin() {
+        System.out.println("backToLogin()");
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/login-view.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 400, 300);
-            
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/login-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
             Stage stage = (Stage) backToLoginButton.getScene().getWindow();
-            
+
             stage.setTitle("Password Management - Login");
             stage.setScene(scene);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-} 
+}

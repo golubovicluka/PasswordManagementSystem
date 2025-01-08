@@ -25,6 +25,8 @@
     <TextField fx:id="usernameField" promptText="Username" />
     <PasswordField fx:id="passwordField" promptText="Password" />
 
+    <Label fx:id="errorLabel" styleClass="error-label" visible="false" />
+
     <HBox spacing="10" alignment="CENTER">
         <Button fx:id="loginButton" text="Login">
             <tooltip>
