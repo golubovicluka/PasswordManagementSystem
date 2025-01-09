@@ -1,6 +1,7 @@
 package com.golubovicluka.passwordmanagementsystem.model;
 
 public class PasswordEntry {
+    private String faviconUrl;
     private String username;
     private String password;
     private String website;
@@ -34,4 +35,12 @@ public class PasswordEntry {
     public void setWebsite(String website) {
         this.website = website;
     }
-} 
+
+    public String getFaviconUrl() {
+        return faviconUrl;
+    }
+
+    public void setFaviconUrl(String faviconUrl) {
+        this.faviconUrl = faviconUrl;
+    }
+}

@@ -8,10 +8,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.scene.input.KeyCode;
 
 import java.io.IOException;
+import com.golubovicluka.passwordmanagementsystem.service.AuthService;
+import javafx.application.Platform;
 
 public class LoginController {
+    private final AuthService authService = new AuthService();
+
     @FXML
     private TextField usernameField;
 
@@ -31,6 +36,22 @@ public class LoginController {
     private void initialize() {
         loginButton.setOnAction(event -> handleLogin());
         registerButton.setOnAction(event -> handleRegister());
+
+        usernameField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                if (passwordField.getText().isEmpty()) {
+                    passwordField.requestFocus();
+                } else {
+                    handleLogin();
+                }
+            }
+        });
+
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                handleLogin();
+            }
+        });
 
         usernameField.textProperty().addListener((observable, oldValue, newValue) -> {
             usernameField.getStyleClass().remove("error-field");
@@ -61,26 +82,32 @@ public class LoginController {
             return;
         }
 
-        // TODO: Replace with actual call to db to check for given username that
-        // password is correct
-        if (username.equals("admin") && password.equals("admin")) {
-            try {
-                FXMLLoader fxmlLoader = new FXMLLoader(
-                        getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
-                Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+        loginButton.setDisable(true);
+        errorLabel.setText("Validating...");
+        errorLabel.setVisible(true);
 
-                Stage stage = (Stage) loginButton.getScene().getWindow();
-                stage.setTitle("Password Management - Passwords");
-                stage.setScene(scene);
-            } catch (IOException e) {
-                e.printStackTrace();
-                showError("An error occurred while loading the application");
-            }
-        } else {
-            showError("Invalid username or password");
-            usernameField.getStyleClass().add("error-field");
-            passwordField.getStyleClass().add("error-field");
-        }
+        authService.validateUser(username, password)
+                .thenAccept(isValid -> Platform.runLater(() -> {
+                    if (isValid) {
+                        try {
+                            FXMLLoader fxmlLoader = new FXMLLoader(
+                                    getClass().getResource(
+                                            "/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
+                            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+                            Stage stage = (Stage) loginButton.getScene().getWindow();
+                            stage.setTitle("Password Management - Passwords");
+                            stage.setScene(scene);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            showError("An error occurred while loading the application");
+                        }
+                    } else {
+                        showError("Invalid username or password");
+                        usernameField.getStyleClass().add("error-field");
+                        passwordField.getStyleClass().add("error-field");
+                    }
+                    loginButton.setDisable(false);
+                }));
     }
 
     private void showError(String message) {
