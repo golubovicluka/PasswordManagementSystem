@@ -8,7 +8,7 @@ import java.util.concurrent.CompletableFuture;
 public class AuthService {
     private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String BASE_URL = "https://jsonplaceholder.typicode.com"; // Using a public test API
+    private final String BASE_URL = "https://jsonplaceholder.typicode.com";
 
     public CompletableFuture<Boolean> validateUser(String username, String password) {
         System.out.println("Validating user...");
