@@ -37,3 +37,5 @@ build/
 ### Mac OS ###
 .DS_Store
 todo
+instructions/project-requirements.md
+instructions/instructions.md
