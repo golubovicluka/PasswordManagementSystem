@@ -39,6 +39,9 @@ public class PasswordsController {
     @FXML
     private TextField searchField;
 
+    @FXML
+    private Button addPasswordButton;
+
     private ObservableList<PasswordEntry> masterData;
     private FilteredList<PasswordEntry> filteredData;
 
@@ -128,6 +131,7 @@ public class PasswordsController {
         passwordTable.setItems(sortedData);
 
         logoutButton.setOnAction(event -> handleLogout());
+        addPasswordButton.setOnAction(event -> handleAddPassword());
     }
 
     private void handleLogout() {
@@ -142,5 +146,26 @@ public class PasswordsController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void handleAddPassword() {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/add-password-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+            AddPasswordController controller = fxmlLoader.getController();
+            controller.setPasswordsController(this);
+
+            Stage stage = (Stage) addPasswordButton.getScene().getWindow();
+            stage.setTitle("Password Management - Add Password");
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addPasswordEntry(PasswordEntry entry) {
+        masterData.add(entry);
     }
 }

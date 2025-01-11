@@ -76,4 +76,39 @@
 
 .error-field {
     -fx-border-color: #f44336;
+}
+
+.hint-text {
+    -fx-fill: #666666;
+    -fx-font-size: 12px;
+}
+
+.icon-button {
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-background-color: transparent;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 4px;
+    -fx-font-size: 16px;
+    -fx-text-fill: #000000;
+}
+
+.icon-button:hover {
+    -fx-background-color: #f0f0f0;
+}
+
+.secondary-button {
+    -fx-background-color: #6c757d;
+    -fx-text-fill: white;
+    -fx-background-radius: 4px;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #5a6268;
+}
+
+.header-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 0 0 20 0;
 } 
