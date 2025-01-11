@@ -12,6 +12,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 
 import java.io.IOException;
 
@@ -33,6 +35,12 @@ public class PasswordsController {
 
     @FXML
     private Button logoutButton;
+
+    @FXML
+    private TextField searchField;
+
+    private ObservableList<PasswordEntry> masterData;
+    private FilteredList<PasswordEntry> filteredData;
 
     @FXML
     private void initialize() {
@@ -68,7 +76,8 @@ public class PasswordsController {
 
         websiteColumn.setPrefWidth(300);
 
-        ObservableList<PasswordEntry> mockData = FXCollections.observableArrayList(
+        // Initialize the master data
+        masterData = FXCollections.observableArrayList(
                 new PasswordEntry("john.doe", "********", "facebook.com"),
                 new PasswordEntry("jane.smith", "********", "twitter.com"),
                 new PasswordEntry("bob.wilson", "********", "linkedin.com"),
@@ -85,7 +94,39 @@ public class PasswordsController {
                 new PasswordEntry("ava.thompson", "********", "discord.com"),
                 new PasswordEntry("noah.garcia", "********", "twitch.tv"));
 
-        passwordTable.setItems(mockData);
+        // Wrap the ObservableList in a FilteredList (initially display all data)
+        filteredData = new FilteredList<>(masterData, p -> true);
+
+        // Set up the search field listener
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(passwordEntry -> {
+                // If filter text is empty, display all entries
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                // Compare website name, username and password fields against search text
+                String lowerCaseFilter = newValue.toLowerCase();
+
+                if (passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                } else if (passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter)) {
+                    return true;
+                }
+                // Note: You might want to exclude password from search for security reasons
+                return false;
+            });
+        });
+
+        // Wrap the FilteredList in a SortedList
+        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
+
+        // Bind the SortedList comparator to the TableView comparator
+        sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
+
+        // Add sorted (and filtered) data to the table
+        passwordTable.setItems(sortedData);
+
         logoutButton.setOnAction(event -> handleLogout());
     }
 
