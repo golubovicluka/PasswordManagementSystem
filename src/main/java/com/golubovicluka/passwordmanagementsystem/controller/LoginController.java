@@ -13,7 +13,6 @@ import javafx.scene.input.KeyCode;
 import java.io.IOException;
 import com.golubovicluka.passwordmanagementsystem.service.AuthService;
 import javafx.application.Platform;
-import com.golubovicluka.passwordmanagementsystem.controller.PasswordsController;
 import com.golubovicluka.passwordmanagementsystem.model.User;
 
 public class LoginController {
@@ -71,12 +70,10 @@ public class LoginController {
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
 
-        // Clear previous error states
         usernameField.getStyleClass().remove("error-field");
         passwordField.getStyleClass().remove("error-field");
         errorLabel.setVisible(false);
 
-        // Validate input fields
         if (username.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Please fill in all fields");
             errorLabel.setVisible(true);
@@ -87,12 +84,10 @@ public class LoginController {
             return;
         }
 
-        // Show loading state
         loginButton.setDisable(true);
         errorLabel.setText("Authenticating...");
         errorLabel.setVisible(true);
 
-        // Attempt authentication
         authService.validateUser(username, password)
                 .thenAccept(user -> Platform.runLater(() -> {
                     if (user != null) {

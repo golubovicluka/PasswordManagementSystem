@@ -5,59 +5,46 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PasswordEntryDAO {
     public ObservableList<PasswordEntry> getAllPasswordEntriesForUser(int userId) {
-        List<PasswordEntry> entries = new ArrayList<>();
-        String query = "SELECT * FROM password_entries WHERE user_id = ?";
+        ObservableList<PasswordEntry> entries = FXCollections.observableArrayList();
+        String sql = "SELECT * FROM password_entries WHERE user_id = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, userId);
-            ResultSet rs = stmt.executeQuery();
+            pstmt.setInt(1, userId);
+            ResultSet rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 PasswordEntry entry = new PasswordEntry(
                         rs.getString("username"),
-                        rs.getString("encrypted_password"),
-                        rs.getString("website_name"));
-                entry.setId(rs.getInt("id"));
-                entry.setWebsiteUrl(rs.getString("website_url"));
+                        rs.getString("password"),
+                        rs.getString("website"));
                 entries.add(entry);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        return FXCollections.observableArrayList(entries);
+        return entries;
     }
 
     public boolean addPasswordEntry(PasswordEntry entry, int userId) {
-        String query = "INSERT INTO password_entries (user_id, website_name, website_url, username, encrypted_password) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO password_entries (user_id, username, password, website) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, userId);
-            stmt.setString(2, entry.getWebsite());
-            stmt.setString(3, entry.getWebsiteUrl());
-            stmt.setString(4, entry.getUsername());
-            stmt.setString(5, entry.getPassword()); // Note: This should be encrypted in production
+            pstmt.setInt(1, userId);
+            pstmt.setString(2, entry.getUsername());
+            pstmt.setString(3, entry.getPassword());
+            pstmt.setString(4, entry.getWebsite());
 
-            int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) {
-                ResultSet generatedKeys = stmt.getGeneratedKeys();
-                if (generatedKeys.next()) {
-                    entry.setId(generatedKeys.getInt(1));
-                    return true;
-                }
-            }
+            return pstmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
         }
-        return false;
     }
 }

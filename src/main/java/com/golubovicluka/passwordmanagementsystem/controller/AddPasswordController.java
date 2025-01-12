@@ -50,7 +50,6 @@ public class AddPasswordController {
     }
 
     private void setupValidation() {
-        // Add listeners for real-time validation
         websiteField.textProperty().addListener(
                 (observable, oldValue, newValue) -> validateField(websiteField, !newValue.trim().isEmpty()));
 
@@ -67,16 +66,11 @@ public class AddPasswordController {
     }
 
     private void setupPasswordToggle() {
-        // Create visible password field (initially hidden)
         visiblePasswordField = new TextField();
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
         visiblePasswordField.promptTextProperty().bind(passwordField.promptTextProperty());
-
-        // Bind the visible field to the password field
         passwordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
-
-        // Add visible field to the GridPane
         GridPane gridPane = (GridPane) passwordField.getParent();
         gridPane.add(visiblePasswordField, 1, 2);
 
@@ -110,18 +104,15 @@ public class AddPasswordController {
         SecureRandom random = new SecureRandom();
         StringBuilder password = new StringBuilder();
 
-        // Ensure at least one of each required character type
         password.append(upper.charAt(random.nextInt(upper.length())));
         password.append(lower.charAt(random.nextInt(lower.length())));
         password.append(digits.charAt(random.nextInt(digits.length())));
         password.append(specialChars.charAt(random.nextInt(specialChars.length())));
 
-        // Fill the rest with random characters
         for (int i = password.length(); i < 12; i++) {
             password.append(allChars.charAt(random.nextInt(allChars.length())));
         }
 
-        // Shuffle the password
         char[] passwordArray = password.toString().toCharArray();
         for (int i = passwordArray.length - 1; i > 0; i--) {
             int j = random.nextInt(i + 1);
@@ -160,17 +151,13 @@ public class AddPasswordController {
             return;
         }
 
-        // Create new password entry
         PasswordEntry newEntry = new PasswordEntry(username, password, website);
 
-        // Add to the main controller's data
         passwordsController.addPasswordEntry(newEntry);
 
-        // Show success message
         messageLabel.setText("Password saved successfully!");
         messageLabel.setStyle("-fx-text-fill: green;");
 
-        // Apply success style
         websiteField.setStyle(SUCCESS_STYLE);
         usernameField.setStyle(SUCCESS_STYLE);
         passwordField.setStyle(SUCCESS_STYLE);
@@ -178,7 +165,6 @@ public class AddPasswordController {
             visiblePasswordField.setStyle(SUCCESS_STYLE);
         }
 
-        // Clear fields after a delay
         new Thread(() -> {
             try {
                 Thread.sleep(1500);
@@ -198,6 +184,9 @@ public class AddPasswordController {
             FXMLLoader fxmlLoader = new FXMLLoader(
                     getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+            PasswordsController newPasswordsController = fxmlLoader.getController();
+            newPasswordsController.setCurrentUserId(this.passwordsController.getCurrentUserId());
 
             Stage stage = (Stage) backButton.getScene().getWindow();
             stage.setTitle("Password Management - Passwords");

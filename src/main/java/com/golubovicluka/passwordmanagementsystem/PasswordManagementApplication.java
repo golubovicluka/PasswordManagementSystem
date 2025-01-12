@@ -16,7 +16,7 @@ public class PasswordManagementApplication extends Application {
         String css = this.getClass().getResource("styles/style.css").toExternalForm();
         scene.getStylesheets().add(css);
 
-        stage.setTitle("Password Management - Login");
+        stage.setTitle("Password Management");
         stage.setScene(scene);
         stage.show();
     }

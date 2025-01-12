@@ -54,26 +54,13 @@ public class PasswordsController {
 
     @FXML
     private void initialize() {
-        // Set up table columns and cell factories
         setupTableColumns();
-
-        // Set up button handlers
         setupButtonHandlers();
-
-        // Initialize the master data as an empty observable list
         masterData = FXCollections.observableArrayList();
-
-        // Initialize filtered data
         filteredData = new FilteredList<>(masterData, p -> true);
-
-        // Set up search functionality
         setupSearch();
-
-        // Set up sorted data
         SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
-
-        // Add data to table
         passwordTable.setItems(sortedData);
     }
 
@@ -83,7 +70,7 @@ public class PasswordsController {
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
 
         websiteColumn.setCellFactory(column -> new TableCell<>() {
-            private final ImageView imageView = new ImageView(DEFAULT_FAVICON);
+            private final ImageView imageView = new ImageView();
             private final HBox hbox = new HBox(5);
             private final Label label = new Label();
 
@@ -105,10 +92,33 @@ public class PasswordsController {
                 }
                 label.setText(website);
                 setGraphic(hbox);
+
+                loadFavicon(website, imageView);
             }
         });
 
         websiteColumn.setPrefWidth(300);
+    }
+
+    private void loadFavicon(String website, ImageView imageView) {
+        new Thread(() -> {
+            try {
+                String faviconUrl = "https://www.google.com/s2/favicons?sz=64&domain_url=" + website;
+                Image favicon = new Image(faviconUrl, true);
+                favicon.progressProperty().addListener((obs, oldProgress, newProgress) -> {
+                    if (newProgress.doubleValue() == 1.0) {
+                        imageView.setImage(favicon);
+                    }
+                });
+                favicon.errorProperty().addListener((obs, oldError, newError) -> {
+                    if (newError) {
+                        imageView.setImage(DEFAULT_FAVICON);
+                    }
+                });
+            } catch (Exception e) {
+                imageView.setImage(DEFAULT_FAVICON);
+            }
+        }).start();
     }
 
     private void setupButtonHandlers() {
@@ -118,15 +128,12 @@ public class PasswordsController {
 
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
-        // Now that we have the user ID, we can load the password entries
         loadPasswordEntries();
     }
 
     private void loadPasswordEntries() {
-        // Clear existing entries
         masterData.clear();
 
-        // Load password entries from database and add them to the master data
         ObservableList<PasswordEntry> entries = passwordEntryDAO.getAllPasswordEntriesForUser(currentUserId);
         masterData.addAll(entries);
     }
@@ -180,5 +187,9 @@ public class PasswordsController {
         if (passwordEntryDAO.addPasswordEntry(entry, currentUserId)) {
             masterData.add(entry);
         }
+    }
+
+    public int getCurrentUserId() {
+        return currentUserId;
     }
 }

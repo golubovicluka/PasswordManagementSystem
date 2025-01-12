@@ -45,7 +45,6 @@ public class RegisterController {
         String password = passwordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
 
-        // Validation
         if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             showError("Please fill in all fields");
             return;
@@ -56,7 +55,6 @@ public class RegisterController {
             return;
         }
 
-        // Register the user
         if (authService.registerUser(username, password)) {
             backToLogin();
         } else {
