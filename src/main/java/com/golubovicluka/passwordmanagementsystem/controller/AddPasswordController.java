@@ -8,11 +8,9 @@ import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Region;
 
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.util.Random;
 
 public class AddPasswordController {
     @FXML

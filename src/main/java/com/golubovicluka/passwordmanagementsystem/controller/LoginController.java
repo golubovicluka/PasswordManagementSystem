@@ -13,9 +13,12 @@ import javafx.scene.input.KeyCode;
 import java.io.IOException;
 import com.golubovicluka.passwordmanagementsystem.service.AuthService;
 import javafx.application.Platform;
+import com.golubovicluka.passwordmanagementsystem.controller.PasswordsController;
+import com.golubovicluka.passwordmanagementsystem.model.User;
 
 public class LoginController {
     private final AuthService authService = new AuthService();
+    private User loggedInUser;
 
     @FXML
     private TextField usernameField;
@@ -68,10 +71,12 @@ public class LoginController {
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
 
+        // Clear previous error states
         usernameField.getStyleClass().remove("error-field");
         passwordField.getStyleClass().remove("error-field");
         errorLabel.setVisible(false);
 
+        // Validate input fields
         if (username.isEmpty() || password.isEmpty()) {
             errorLabel.setText("Please fill in all fields");
             errorLabel.setVisible(true);
@@ -82,24 +87,38 @@ public class LoginController {
             return;
         }
 
+        // Show loading state
         loginButton.setDisable(true);
-        errorLabel.setText("Validating...");
+        errorLabel.setText("Authenticating...");
         errorLabel.setVisible(true);
 
+        // Attempt authentication
         authService.validateUser(username, password)
-                .thenAccept(isValid -> Platform.runLater(() -> {
-                    if (isValid) {
+                .thenAccept(user -> Platform.runLater(() -> {
+                    if (user != null) {
+                        loggedInUser = user;
                         try {
-                            FXMLLoader fxmlLoader = new FXMLLoader(
-                                    getClass().getResource(
-                                            "/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
-                            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+                            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                                    "/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
+                            Scene scene = new Scene(loader.load(), 800, 600);
+
+                            PasswordsController passwordsController = loader.getController();
+                            if (passwordsController == null) {
+                                throw new IOException(
+                                        "Failed to load the passwords controller. Please check FXML configuration.");
+                            }
+
+                            passwordsController.setCurrentUserId(loggedInUser.getId());
+
                             Stage stage = (Stage) loginButton.getScene().getWindow();
                             stage.setTitle("Password Management - Passwords");
                             stage.setScene(scene);
                         } catch (IOException e) {
                             e.printStackTrace();
-                            showError("An error occurred while loading the application");
+                            showError("An error occurred while loading the application: " + e.getMessage());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            showError("An unexpected error occurred: " + e.getMessage());
                         }
                     } else {
                         showError("Invalid username or password");
@@ -107,7 +126,14 @@ public class LoginController {
                         passwordField.getStyleClass().add("error-field");
                     }
                     loginButton.setDisable(false);
-                }));
+                }))
+                .exceptionally(throwable -> {
+                    Platform.runLater(() -> {
+                        showError("Connection error. Please try again.");
+                        loginButton.setDisable(false);
+                    });
+                    return null;
+                });
     }
 
     private void showError(String message) {

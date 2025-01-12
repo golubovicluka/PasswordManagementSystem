@@ -14,6 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import com.golubovicluka.passwordmanagementsystem.dao.PasswordEntryDAO;
 
 import java.io.IOException;
 
@@ -44,9 +45,39 @@ public class PasswordsController {
 
     private ObservableList<PasswordEntry> masterData;
     private FilteredList<PasswordEntry> filteredData;
+    private final PasswordEntryDAO passwordEntryDAO;
+    private int currentUserId;
+
+    public PasswordsController() {
+        this.passwordEntryDAO = new PasswordEntryDAO();
+    }
 
     @FXML
     private void initialize() {
+        // Set up table columns and cell factories
+        setupTableColumns();
+
+        // Set up button handlers
+        setupButtonHandlers();
+
+        // Initialize the master data as an empty observable list
+        masterData = FXCollections.observableArrayList();
+
+        // Initialize filtered data
+        filteredData = new FilteredList<>(masterData, p -> true);
+
+        // Set up search functionality
+        setupSearch();
+
+        // Set up sorted data
+        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
+        sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
+
+        // Add data to table
+        passwordTable.setItems(sortedData);
+    }
+
+    private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
@@ -78,60 +109,26 @@ public class PasswordsController {
         });
 
         websiteColumn.setPrefWidth(300);
+    }
 
-        // Initialize the master data
-        masterData = FXCollections.observableArrayList(
-                new PasswordEntry("john.doe", "********", "facebook.com"),
-                new PasswordEntry("jane.smith", "********", "twitter.com"),
-                new PasswordEntry("bob.wilson", "********", "linkedin.com"),
-                new PasswordEntry("alice.wonder", "********", "github.com"),
-                new PasswordEntry("mike.ross", "********", "google.com"),
-                new PasswordEntry("emma.davis", "********", "amazon.com"),
-                new PasswordEntry("david.miller", "********", "microsoft.com"),
-                new PasswordEntry("sarah.jones", "********", "apple.com"),
-                new PasswordEntry("james.wilson", "********", "netflix.com"),
-                new PasswordEntry("olivia.brown", "********", "spotify.com"),
-                new PasswordEntry("william.taylor", "********", "reddit.com"),
-                new PasswordEntry("sophia.anderson", "********", "instagram.com"),
-                new PasswordEntry("lucas.martin", "********", "youtube.com"),
-                new PasswordEntry("ava.thompson", "********", "discord.com"),
-                new PasswordEntry("noah.garcia", "********", "twitch.tv"));
-
-        // Wrap the ObservableList in a FilteredList (initially display all data)
-        filteredData = new FilteredList<>(masterData, p -> true);
-
-        // Set up the search field listener
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(passwordEntry -> {
-                // If filter text is empty, display all entries
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                // Compare website name, username and password fields against search text
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                if (passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                } else if (passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter)) {
-                    return true;
-                }
-                // Note: You might want to exclude password from search for security reasons
-                return false;
-            });
-        });
-
-        // Wrap the FilteredList in a SortedList
-        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
-
-        // Bind the SortedList comparator to the TableView comparator
-        sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
-
-        // Add sorted (and filtered) data to the table
-        passwordTable.setItems(sortedData);
-
+    private void setupButtonHandlers() {
         logoutButton.setOnAction(event -> handleLogout());
         addPasswordButton.setOnAction(event -> handleAddPassword());
+    }
+
+    public void setCurrentUserId(int userId) {
+        this.currentUserId = userId;
+        // Now that we have the user ID, we can load the password entries
+        loadPasswordEntries();
+    }
+
+    private void loadPasswordEntries() {
+        // Clear existing entries
+        masterData.clear();
+
+        // Load password entries from database and add them to the master data
+        ObservableList<PasswordEntry> entries = passwordEntryDAO.getAllPasswordEntriesForUser(currentUserId);
+        masterData.addAll(entries);
     }
 
     private void handleLogout() {
@@ -165,7 +162,23 @@ public class PasswordsController {
         }
     }
 
+    private void setupSearch() {
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            filteredData.setPredicate(passwordEntry -> {
+                if (newValue == null || newValue.isEmpty()) {
+                    return true;
+                }
+
+                String lowerCaseFilter = newValue.toLowerCase();
+                return passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter) ||
+                        passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter);
+            });
+        });
+    }
+
     public void addPasswordEntry(PasswordEntry entry) {
-        masterData.add(entry);
+        if (passwordEntryDAO.addPasswordEntry(entry, currentUserId)) {
+            masterData.add(entry);
+        }
     }
 }

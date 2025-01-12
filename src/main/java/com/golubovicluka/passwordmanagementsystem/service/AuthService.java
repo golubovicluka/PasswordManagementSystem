@@ -1,30 +1,53 @@
 package com.golubovicluka.passwordmanagementsystem.service;
 
-import okhttp3.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
+import com.golubovicluka.passwordmanagementsystem.dao.UserDAO;
+import com.golubovicluka.passwordmanagementsystem.model.User;
+import org.springframework.security.crypto.bcrypt.BCrypt;
+
 import java.util.concurrent.CompletableFuture;
 
 public class AuthService {
-    private final OkHttpClient client = new OkHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String BASE_URL = "https://jsonplaceholder.typicode.com";
+    private final UserDAO userDAO;
+    private User authenticatedUser;
 
-    public CompletableFuture<Boolean> validateUser(String username, String password) {
-        System.out.println("Validating user...");
+    public AuthService() {
+        this.userDAO = new UserDAO();
+    }
+
+    public CompletableFuture<User> validateUser(String username, String password) {
         return CompletableFuture.supplyAsync(() -> {
-            Request request = new Request.Builder()
-                    .url(BASE_URL + "/users/1")
-                    .get()
-                    .build();
+            try {
+                User user = userDAO.findByUsername(username)
+                        .filter(u -> BCrypt.checkpw(password, u.getPasswordHash()))
+                        .orElse(null);
 
-            try (Response response = client.newCall(request).execute()) {
-                System.out.println("Sending request...");
-                return response.isSuccessful();
-            } catch (IOException e) {
+                if (user != null) {
+                    this.authenticatedUser = user;
+                    return user;
+                }
+                return null;
+            } catch (Exception e) {
                 e.printStackTrace();
-                return false;
+                return null;
             }
         });
+    }
+
+    public User getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    public String hashPassword(String plainTextPassword) {
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt());
+    }
+
+    public boolean registerUser(String username, String password) {
+        try {
+            String hashedPassword = hashPassword(password);
+            return userDAO.createUser(username, hashedPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
