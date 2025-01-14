@@ -15,6 +15,7 @@ public class PasswordEntry {
     private int userId;
     private Category category;
     private String favicon;
+    private String title;
 
     /**
      * Constructor for creating a new password entry with basic information
@@ -175,5 +176,23 @@ public class PasswordEntry {
      */
     public void setFavicon(String favicon) {
         this.favicon = favicon;
+    }
+
+    /**
+     * Gets the title associated with this password entry
+     *
+     * @return the title for the password entry
+     */
+    public String getTitle() {
+        return title != null ? title : website;
+    }
+
+    /**
+     * Sets the title for this password entry
+     *
+     * @param title the title to set
+     */
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

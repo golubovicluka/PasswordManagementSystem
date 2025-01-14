@@ -19,6 +19,10 @@ import com.golubovicluka.passwordmanagementsystem.model.Category;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.control.Button;
+import javafx.scene.layout.FlowPane;
+import java.util.List;
+import com.golubovicluka.passwordmanagementsystem.dao.CategoryDAO;
 
 import java.io.IOException;
 
@@ -50,10 +54,16 @@ public class PasswordsController {
     @FXML
     private Button addPasswordButton;
 
+    @FXML
+    private FlowPane categoryFilterPane;
+
     private ObservableList<PasswordEntry> masterData;
     private FilteredList<PasswordEntry> filteredData;
     private final PasswordEntryDAO passwordEntryDAO;
     private int currentUserId;
+    private FilteredList<PasswordEntry> filteredEntries;
+    private String currentSearchText = "";
+    private Category selectedCategory = null;
 
     public PasswordsController() {
         this.passwordEntryDAO = new PasswordEntryDAO();
@@ -73,6 +83,19 @@ public class PasswordsController {
         categoryColumn.setCellValueFactory(cellData -> {
             Category category = cellData.getValue().getCategory();
             return new SimpleStringProperty(category != null ? category.getName() : "");
+        });
+
+        // Initialize FilteredList
+        filteredEntries = new FilteredList<>(masterData);
+        passwordTable.setItems(filteredEntries);
+
+        // Load and display category filters
+        loadCategoryFilters();
+
+        // Setup search functionality
+        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            currentSearchText = newValue;
+            updateFilters();
         });
     }
 
@@ -284,5 +307,56 @@ public class PasswordsController {
 
     public int getCurrentUserId() {
         return currentUserId;
+    }
+
+    private void loadCategoryFilters() {
+        CategoryDAO categoryDAO = new CategoryDAO();
+        List<Category> categories = categoryDAO.getAllCategories();
+
+        categoryFilterPane.getChildren().clear();
+
+        // Add "All" filter
+        Button allButton = createCategoryButton(null);
+        categoryFilterPane.getChildren().add(allButton);
+
+        // Add category filters
+        for (Category category : categories) {
+            Button categoryButton = createCategoryButton(category);
+            categoryFilterPane.getChildren().add(categoryButton);
+        }
+    }
+
+    private Button createCategoryButton(Category category) {
+        Button button = new Button(category == null ? "All" : category.getName());
+        button.getStyleClass().add("category-filter-button");
+
+        button.setOnAction(e -> {
+            selectedCategory = category;
+            updateFilters();
+
+            // Reset other buttons' styles
+            categoryFilterPane.getChildren()
+                    .forEach(node -> node.getStyleClass().remove("category-filter-button-selected"));
+
+            // Highlight selected button
+            button.getStyleClass().add("category-filter-button-selected");
+        });
+
+        return button;
+    }
+
+    private void updateFilters() {
+        filteredEntries.setPredicate(entry -> {
+            boolean matchesSearch = currentSearchText.isEmpty() ||
+                    entry.getWebsite().toLowerCase().contains(currentSearchText.toLowerCase()) ||
+                    entry.getUsername().toLowerCase().contains(currentSearchText.toLowerCase()) ||
+                    (entry.getTitle() != null
+                            && entry.getTitle().toLowerCase().contains(currentSearchText.toLowerCase()));
+
+            boolean matchesCategory = selectedCategory == null ||
+                    (entry.getCategory() != null && entry.getCategory().getId() == selectedCategory.getId());
+
+            return matchesSearch && matchesCategory;
+        });
     }
 }

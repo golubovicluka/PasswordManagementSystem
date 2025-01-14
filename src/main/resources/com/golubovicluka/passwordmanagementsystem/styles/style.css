@@ -117,6 +117,30 @@
     -fx-cursor: hand;
 }
 
-/* .password-column:hover {
-    -fx-background-color: #f1f0f0;
-}  */
+.category-filter-pane {
+    -fx-padding: 10px;
+    -fx-background-color: transparent;
+}
+
+.category-filter-button {
+    -fx-background-color: #f0f0f0;
+    -fx-text-fill: #333333;
+    -fx-padding: 5px 10px;
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-cursor: hand;
+    -fx-font-size: 12px;
+}
+
+.category-filter-button:hover {
+    -fx-background-color: #e0e0e0;
+}
+
+.category-filter-button-selected {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: white;
+}
+
+.category-filter-button-selected:hover {
+    -fx-background-color: #2196f3;
+}

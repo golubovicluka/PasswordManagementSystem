@@ -6,25 +6,28 @@ package com.golubovicluka.passwordmanagementsystem.model;
  * specific users.
  */
 public class Category {
-    private int categoryId;
+    private int id;
     private int userId;
     private String name;
     private String description;
 
     public Category(int categoryId, int userId, String name, String description) {
-        this.categoryId = categoryId;
+        this.id = categoryId;
         this.userId = userId;
         this.name = name;
         this.description = description;
     }
 
-    // Getters and Setters
-    public int getCategoryId() {
-        return categoryId;
+    public Category() {
     }
 
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getUserId() {

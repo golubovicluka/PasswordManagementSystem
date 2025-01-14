@@ -61,4 +61,26 @@ public class CategoryDAO {
         }
         return null;
     }
+
+    public List<Category> getAllCategories() {
+        List<Category> categories = new ArrayList<>();
+        String query = "SELECT * FROM categories";
+
+        try (Connection conn = databaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Category category = new Category();
+                category.setId(rs.getInt("category_id"));
+                category.setName(rs.getString("name"));
+                category.setDescription(rs.getString("description"));
+                categories.add(category);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
+    }
 }
