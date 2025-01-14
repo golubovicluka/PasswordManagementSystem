@@ -95,7 +95,7 @@ public class LoginController {
                         try {
                             FXMLLoader loader = new FXMLLoader(getClass().getResource(
                                     "/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
-                            Scene scene = new Scene(loader.load(), 800, 600);
+                            Scene scene = new Scene(loader.load(), 1200, 800);
 
                             PasswordsController passwordsController = loader.getController();
                             if (passwordsController == null) {

@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import com.golubovicluka.passwordmanagementsystem.dao.PasswordEntryDAO;
+import com.golubovicluka.passwordmanagementsystem.model.Category;
+import javafx.beans.property.SimpleStringProperty;
 
 import java.io.IOException;
 
@@ -33,6 +35,9 @@ public class PasswordsController {
 
     @FXML
     private TableColumn<PasswordEntry, String> websiteColumn;
+
+    @FXML
+    private TableColumn<PasswordEntry, String> categoryColumn;
 
     @FXML
     private Button logoutButton;
@@ -62,12 +67,43 @@ public class PasswordsController {
         SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
         sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
         passwordTable.setItems(sortedData);
+
+        categoryColumn.setCellValueFactory(cellData -> {
+            Category category = cellData.getValue().getCategory();
+            return new SimpleStringProperty(category != null ? category.getName() : "");
+        });
     }
 
     private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
+        categoryColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                    setText(null);
+                    setTooltip(null);
+                    return;
+                }
+
+                PasswordEntry entry = getTableRow().getItem();
+                Category category = entry.getCategory();
+
+                setText(category != null ? category.getName() : "Uncategorized");
+
+                if (category != null && category.getDescription() != null) {
+                    setTooltip(new Tooltip(category.getDescription()));
+                }
+            }
+        });
+
+        categoryColumn.setCellValueFactory(cellData -> {
+            Category category = cellData.getValue().getCategory();
+            return new SimpleStringProperty(category != null ? category.getName() : "Uncategorized");
+        });
 
         websiteColumn.setCellFactory(column -> new TableCell<>() {
             private final ImageView imageView = new ImageView();

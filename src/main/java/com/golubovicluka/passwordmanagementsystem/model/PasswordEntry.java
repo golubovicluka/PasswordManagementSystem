@@ -12,6 +12,9 @@ public class PasswordEntry {
     private String website;
     private int id;
     private String websiteUrl;
+    private int userId;
+    private Category category;
+    private String favicon;
 
     /**
      * Constructor for creating a new password entry with basic information
@@ -24,6 +27,28 @@ public class PasswordEntry {
         this.username = username;
         this.password = password;
         this.website = website;
+    }
+
+    /**
+     * Constructor for creating a new password entry with all information
+     *
+     * @param id       the unique identifier for the password entry
+     * @param userId   the unique identifier for the user
+     * @param website  the name of the website
+     * @param username the username for the website login
+     * @param password the password for the website login
+     * @param category the category for the password entry
+     * @param favicon  the favicon for the website
+     */
+    public PasswordEntry(int id, int userId, String website, String username, String password, Category category,
+            String favicon) {
+        this.id = id;
+        this.userId = userId;
+        this.website = website;
+        this.username = username;
+        this.password = password;
+        this.category = category;
+        this.favicon = favicon;
     }
 
     /**
@@ -114,5 +139,41 @@ public class PasswordEntry {
      */
     public String getWebsiteUrl() {
         return websiteUrl;
+    }
+
+    /**
+     * Gets the category associated with this password entry
+     *
+     * @return the category for the password entry
+     */
+    public Category getCategory() {
+        return category;
+    }
+
+    /**
+     * Sets the category for this password entry
+     *
+     * @param category the category to set
+     */
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    /**
+     * Gets the favicon associated with this password entry
+     *
+     * @return the favicon for the website
+     */
+    public String getFavicon() {
+        return favicon;
+    }
+
+    /**
+     * Sets the favicon for this password entry
+     *
+     * @param favicon the favicon to set
+     */
+    public void setFavicon(String favicon) {
+        this.favicon = favicon;
     }
 }

@@ -5,10 +5,12 @@ import java.sql.*;
 import java.util.Optional;
 
 public class UserDAO {
+    private final DatabaseConnection databaseConnection = new DatabaseConnection();
+
     public Optional<User> findByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
 
-        try (Connection conn = DatabaseConnection.getConnection();
+        try (Connection conn = databaseConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
@@ -30,7 +32,8 @@ public class UserDAO {
 
     public boolean createUser(String username, String passwordHash) {
         String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
-        try (Connection conn = DatabaseConnection.getConnection();
+
+        try (Connection conn = databaseConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.setString(2, passwordHash);
