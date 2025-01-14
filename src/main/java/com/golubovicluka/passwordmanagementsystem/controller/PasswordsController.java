@@ -315,11 +315,9 @@ public class PasswordsController {
 
         categoryFilterPane.getChildren().clear();
 
-        // Add "All" filter
         Button allButton = createCategoryButton(null);
         categoryFilterPane.getChildren().add(allButton);
 
-        // Add category filters
         for (Category category : categories) {
             Button categoryButton = createCategoryButton(category);
             categoryFilterPane.getChildren().add(categoryButton);
@@ -334,11 +332,9 @@ public class PasswordsController {
             selectedCategory = category;
             updateFilters();
 
-            // Reset other buttons' styles
             categoryFilterPane.getChildren()
                     .forEach(node -> node.getStyleClass().remove("category-filter-button-selected"));
 
-            // Highlight selected button
             button.getStyleClass().add("category-filter-button-selected");
         });
 
