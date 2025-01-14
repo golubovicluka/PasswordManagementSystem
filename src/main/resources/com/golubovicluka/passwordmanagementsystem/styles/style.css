@@ -111,4 +111,12 @@
     -fx-font-size: 24px;
     -fx-font-weight: bold;
     -fx-padding: 0 0 20 0;
-} 
+}
+
+.password-column {
+    -fx-cursor: hand;
+}
+
+/* .password-column:hover {
+    -fx-background-color: #f1f0f0;
+}  */

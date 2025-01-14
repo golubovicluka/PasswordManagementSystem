@@ -17,6 +17,8 @@ import javafx.collections.transformation.SortedList;
 import com.golubovicluka.passwordmanagementsystem.dao.PasswordEntryDAO;
 import com.golubovicluka.passwordmanagementsystem.model.Category;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
 
 import java.io.IOException;
 
@@ -77,32 +79,87 @@ public class PasswordsController {
     private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
+        passwordColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
+            private boolean isRevealed = false;
+            private final Tooltip hiddenTooltip = new Tooltip("Click to reveal password");
+            private final Tooltip revealedTooltip = new Tooltip("Click to hide password • Click with CTRL to copy");
+
+            {
+                setTooltip(hiddenTooltip);
+
+                setOnMouseClicked(event -> {
+                    if (getItem() == null)
+                        return;
+
+                    if (event.isControlDown()) {
+
+                        final Clipboard clipboard = Clipboard.getSystemClipboard();
+                        final ClipboardContent content = new ClipboardContent();
+                        content.putString(getItem());
+                        clipboard.setContent(content);
+
+                        Tooltip copiedTooltip = new Tooltip("Password copied!");
+                        setTooltip(copiedTooltip);
+                        new Thread(() -> {
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            javafx.application.Platform
+                                    .runLater(() -> setTooltip(isRevealed ? revealedTooltip : hiddenTooltip));
+                        }).start();
+                    } else {
+                        isRevealed = !isRevealed;
+                        updateItem(getItem(), false);
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(String password, boolean empty) {
+                super.updateItem(password, empty);
+
+                if (empty || password == null) {
+                    setText(null);
+                    setTooltip(null);
+                    return;
+                }
+
+                if (isRevealed) {
+                    setText(password);
+                    setTooltip(revealedTooltip);
+                } else {
+                    setText("•".repeat(8));
+                    setTooltip(hiddenTooltip);
+                }
+            }
+        });
         websiteColumn.setCellValueFactory(new PropertyValueFactory<>("website"));
         categoryColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
                 super.updateItem(item, empty);
 
-                if (empty || getTableRow() == null || getTableRow().getItem() == null) {
+                if (empty) {
                     setText(null);
                     setTooltip(null);
                     return;
                 }
 
                 PasswordEntry entry = getTableRow().getItem();
-                Category category = entry.getCategory();
+                if (entry == null) {
+                    setText(null);
+                    return;
+                }
 
+                Category category = entry.getCategory();
                 setText(category != null ? category.getName() : "Uncategorized");
 
                 if (category != null && category.getDescription() != null) {
                     setTooltip(new Tooltip(category.getDescription()));
                 }
             }
-        });
-
-        categoryColumn.setCellValueFactory(cellData -> {
-            Category category = cellData.getValue().getCategory();
-            return new SimpleStringProperty(category != null ? category.getName() : "Uncategorized");
         });
 
         websiteColumn.setCellFactory(column -> new TableCell<>() {

@@ -33,7 +33,6 @@ public class PasswordEntryDAO {
                             userId,
                             rs.getString("category_name"),
                             rs.getString("category_description"));
-                    System.out.println(category.toString());
                 }
 
                 PasswordEntry entry = new PasswordEntry(
@@ -44,9 +43,7 @@ public class PasswordEntryDAO {
                         rs.getString("password"),
                         category,
                         null);
-                System.out.println(entry.toString());
                 entries.add(entry);
-                System.out.println(entries.toString());
             }
         } catch (SQLException e) {
             e.printStackTrace();
