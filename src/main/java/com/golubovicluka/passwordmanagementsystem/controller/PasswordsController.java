@@ -85,14 +85,11 @@ public class PasswordsController {
             return new SimpleStringProperty(category != null ? category.getName() : "");
         });
 
-        // Initialize FilteredList
         filteredEntries = new FilteredList<>(masterData);
         passwordTable.setItems(filteredEntries);
 
-        // Load and display category filters
         loadCategoryFilters();
 
-        // Setup search functionality
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             currentSearchText = newValue;
             updateFilters();
@@ -293,8 +290,11 @@ public class PasswordsController {
                 }
 
                 String lowerCaseFilter = newValue.toLowerCase();
+
                 return passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter) ||
-                        passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter);
+                        passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter) ||
+                        (passwordEntry.getCategory() != null &&
+                                passwordEntry.getCategory().getName().toLowerCase().contains(lowerCaseFilter));
             });
         });
     }

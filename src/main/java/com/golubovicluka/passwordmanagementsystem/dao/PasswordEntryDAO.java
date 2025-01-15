@@ -52,17 +52,23 @@ public class PasswordEntryDAO {
     }
 
     public boolean addPasswordEntry(PasswordEntry entry, int userId) {
-        String sql = "INSERT INTO password_entries (user_id, username, password, website) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO password_entries (user_id, website, username, password, category_id) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = databaseConnection.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
-            pstmt.setInt(1, userId);
-            pstmt.setString(2, entry.getUsername());
-            pstmt.setString(3, entry.getPassword());
-            pstmt.setString(4, entry.getWebsite());
+            stmt.setInt(1, userId);
+            stmt.setString(2, entry.getWebsite());
+            stmt.setString(3, entry.getUsername());
+            stmt.setString(4, entry.getPassword());
 
-            return pstmt.executeUpdate() > 0;
+            if (entry.getCategory() != null) {
+                stmt.setInt(5, entry.getCategory().getId());
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+            }
+
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

@@ -11,6 +11,7 @@ module com.golubovicluka.passwordmanagementsystem {
     requires java.sql;
     requires com.fasterxml.jackson.databind;
     requires spring.security.crypto;
+    requires javafx.base;
 
     opens com.golubovicluka.passwordmanagementsystem to javafx.fxml;
     opens com.golubovicluka.passwordmanagementsystem.controller to javafx.fxml;

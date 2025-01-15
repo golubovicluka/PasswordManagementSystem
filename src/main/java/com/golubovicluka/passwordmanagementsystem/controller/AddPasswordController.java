@@ -1,8 +1,13 @@
 package com.golubovicluka.passwordmanagementsystem.controller;
 
+import com.golubovicluka.passwordmanagementsystem.dao.CategoryDAO;
+import com.golubovicluka.passwordmanagementsystem.model.Category;
 import com.golubovicluka.passwordmanagementsystem.model.PasswordEntry;
+
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.text.Text;
@@ -11,6 +16,7 @@ import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 import java.security.SecureRandom;
+import java.util.List;
 
 public class AddPasswordController {
     @FXML
@@ -31,13 +37,19 @@ public class AddPasswordController {
     private Button generatePasswordButton;
     @FXML
     private Text passwordHints;
+    @FXML
+    private ComboBox<Category> categoryComboBox;
+    @FXML
+    private Button addCategoryButton;
 
+    @FXML
     private TextField visiblePasswordField;
     private PasswordsController passwordsController;
     private boolean isPasswordVisible = false;
     private static final String VALID_STYLE = "";
     private static final String INVALID_STYLE = "-fx-border-color: red; -fx-border-width: 2px;";
     private static final String SUCCESS_STYLE = "-fx-border-color: green; -fx-border-width: 2px;";
+    private CategoryDAO categoryDAO;
 
     @FXML
     private void initialize() {
@@ -47,6 +59,9 @@ public class AddPasswordController {
 
         saveButton.setOnAction(event -> handleSave());
         backButton.setOnAction(event -> handleBack());
+
+        categoryDAO = new CategoryDAO();
+        setupCategoryControls();
     }
 
     private void setupValidation() {
@@ -66,13 +81,10 @@ public class AddPasswordController {
     }
 
     private void setupPasswordToggle() {
-        visiblePasswordField = new TextField();
         visiblePasswordField.setManaged(false);
         visiblePasswordField.setVisible(false);
         visiblePasswordField.promptTextProperty().bind(passwordField.promptTextProperty());
         passwordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
-        GridPane gridPane = (GridPane) passwordField.getParent();
-        gridPane.add(visiblePasswordField, 1, 2);
 
         togglePasswordButton.setOnAction(event -> {
             isPasswordVisible = !isPasswordVisible;
@@ -138,6 +150,7 @@ public class AddPasswordController {
         String website = websiteField.getText().trim();
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
+        Category selectedCategory = categoryComboBox.getValue();
 
         if (website.isEmpty() || username.isEmpty() || password.isEmpty()) {
             messageLabel.setText("Please fill in all fields");
@@ -152,6 +165,7 @@ public class AddPasswordController {
         }
 
         PasswordEntry newEntry = new PasswordEntry(username, password, website);
+        newEntry.setCategory(selectedCategory);
 
         passwordsController.addPasswordEntry(newEntry);
 
@@ -177,13 +191,14 @@ public class AddPasswordController {
 
     public void setPasswordsController(PasswordsController passwordsController) {
         this.passwordsController = passwordsController;
+        loadCategories();
     }
 
     private void handleBack() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
                     getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/passwords-view.fxml"));
-            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+            Scene scene = new Scene(fxmlLoader.load(), 1200, 800);
 
             PasswordsController newPasswordsController = fxmlLoader.getController();
             newPasswordsController.setCurrentUserId(this.passwordsController.getCurrentUserId());
@@ -200,5 +215,99 @@ public class AddPasswordController {
         websiteField.clear();
         usernameField.clear();
         passwordField.clear();
+    }
+
+    private void setupCategoryControls() {
+        addCategoryButton.setOnAction(e -> showAddCategoryDialog());
+
+        categoryComboBox.setCellFactory(param -> new ListCell<Category>() {
+            @Override
+            protected void updateItem(Category category, boolean empty) {
+                super.updateItem(category, empty);
+                if (empty || category == null) {
+                    setText(null);
+                } else {
+                    setText(category.getName());
+                }
+            }
+        });
+
+        categoryComboBox.setButtonCell(new ListCell<Category>() {
+            @Override
+            protected void updateItem(Category category, boolean empty) {
+                super.updateItem(category, empty);
+                if (empty || category == null) {
+                    setText(null);
+                } else {
+                    setText(category.getName());
+                }
+            }
+        });
+    }
+
+    private void showAddCategoryDialog() {
+        Dialog<Category> dialog = new Dialog<>();
+        dialog.setTitle("Add New Category");
+        dialog.setHeaderText("Create a new category");
+
+        DialogPane dialogPane = dialog.getDialogPane();
+        dialogPane.getStylesheets().add(
+                getClass().getResource("/com/golubovicluka/passwordmanagementsystem/styles/style.css")
+                        .toExternalForm());
+
+        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialogPane.getButtonTypes().addAll(saveButtonType, cancelButtonType);
+
+        Button saveButton = (Button) dialogPane.lookupButton(saveButtonType);
+        Button cancelButton = (Button) dialogPane.lookupButton(cancelButtonType);
+        saveButton.getStyleClass().add("ok-button");
+        cancelButton.getStyleClass().add("cancel-button");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+
+        TextField nameField = new TextField();
+        nameField.setPromptText("Category name");
+        TextArea descriptionField = new TextArea();
+        descriptionField.setPromptText("Category description");
+        descriptionField.setPrefRowCount(3);
+
+        grid.add(new Label("Name:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Description:"), 0, 1);
+        grid.add(descriptionField, 1, 1);
+
+        dialogPane.setContent(grid);
+
+        saveButton.setDisable(true);
+        nameField.textProperty()
+                .addListener((observable, oldValue, newValue) -> saveButton.setDisable(newValue.trim().isEmpty()));
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == saveButtonType) {
+                String name = nameField.getText().trim();
+                String description = descriptionField.getText().trim();
+                return categoryDAO.createCategory(
+                        passwordsController.getCurrentUserId(),
+                        name,
+                        description);
+            }
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(category -> {
+            if (category != null) {
+                loadCategories();
+                categoryComboBox.setValue(category);
+            }
+        });
+    }
+
+    private void loadCategories() {
+        List<Category> categories = categoryDAO.getCategoriesForUser(passwordsController.getCurrentUserId());
+        categoryComboBox.setItems(FXCollections.observableArrayList(categories));
     }
 }
