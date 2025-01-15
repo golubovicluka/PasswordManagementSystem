@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -23,6 +24,8 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.FlowPane;
 import java.util.List;
 import com.golubovicluka.passwordmanagementsystem.dao.CategoryDAO;
+import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 
@@ -56,6 +59,9 @@ public class PasswordsController {
 
     @FXML
     private FlowPane categoryFilterPane;
+
+    @FXML
+    private TableColumn<PasswordEntry, Void> actionsColumn;
 
     private ObservableList<PasswordEntry> masterData;
     private FilteredList<PasswordEntry> filteredData;
@@ -211,6 +217,52 @@ public class PasswordsController {
         });
 
         websiteColumn.setPrefWidth(300);
+
+        actionsColumn.setCellFactory(column -> new TableCell<>() {
+            private final Button editButton = new Button();
+            private final Button deleteButton = new Button();
+            private final HBox buttonsBox = new HBox(5);
+
+            {
+                editButton.getStyleClass().add("icon-button");
+                editButton.setTooltip(new Tooltip("Edit Password"));
+
+                FontIcon editIcon = new FontIcon(FontAwesomeSolid.PENCIL_ALT);
+                editIcon.setIconSize(16);
+                editButton.setGraphic(editIcon);
+
+                deleteButton.getStyleClass().add("icon-button");
+                deleteButton.setTooltip(new Tooltip("Delete Password"));
+
+                FontIcon deleteIcon = new FontIcon(FontAwesomeSolid.TRASH_ALT);
+                deleteIcon.setIconSize(16);
+                deleteIcon.getStyleClass().add("delete-icon");
+                deleteButton.setGraphic(deleteIcon);
+
+                buttonsBox.getChildren().addAll(editButton, deleteButton);
+                buttonsBox.setAlignment(Pos.CENTER);
+
+                editButton.setOnAction(event -> {
+                    PasswordEntry entry = getTableView().getItems().get(getIndex());
+                    handleEditPassword(entry);
+                });
+
+                deleteButton.setOnAction(event -> {
+                    PasswordEntry entry = getTableView().getItems().get(getIndex());
+                    handleDeletePassword(entry);
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(buttonsBox);
+                }
+            }
+        });
     }
 
     private void loadFavicon(String website, ImageView imageView) {
@@ -268,7 +320,8 @@ public class PasswordsController {
     private void handleAddPassword() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
-                    getClass().getResource("/com/golubovicluka/passwordmanagementsystem/view/add-password-view.fxml"));
+                    getClass().getResource(
+                            "/com/golubovicluka/passwordmanagementsystem/view/add-edit-password-view.fxml"));
             Scene scene = new Scene(fxmlLoader.load(), 800, 600);
 
             AddPasswordController controller = fxmlLoader.getController();
@@ -353,6 +406,48 @@ public class PasswordsController {
                     (entry.getCategory() != null && entry.getCategory().getId() == selectedCategory.getId());
 
             return matchesSearch && matchesCategory;
+        });
+    }
+
+    private void handleEditPassword(PasswordEntry entry) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(
+                    getClass().getResource(
+                            "/com/golubovicluka/passwordmanagementsystem/view/add-edit-password-view.fxml"));
+            Scene scene = new Scene(fxmlLoader.load(), 800, 600);
+
+            AddPasswordController controller = fxmlLoader.getController();
+            controller.setPasswordsController(this);
+            controller.setEditMode(entry); // New method to set up edit mode
+
+            Stage stage = (Stage) addPasswordButton.getScene().getWindow();
+            stage.setTitle("Password Management - Edit Password");
+            stage.setScene(scene);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleDeletePassword(PasswordEntry entry) {
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Confirm Delete");
+        confirmDialog.setHeaderText("Delete Password Entry");
+        confirmDialog.setContentText("Are you sure you want to delete this password entry?");
+
+        Stage stage = (Stage) confirmDialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().clear();
+
+        DialogPane dialogPane = confirmDialog.getDialogPane();
+        dialogPane.getStylesheets().add(
+                getClass().getResource("/com/golubovicluka/passwordmanagementsystem/styles/style.css")
+                        .toExternalForm());
+
+        confirmDialog.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                if (passwordEntryDAO.deletePasswordEntry(entry.getId())) {
+                    masterData.remove(entry);
+                }
+            }
         });
     }
 }

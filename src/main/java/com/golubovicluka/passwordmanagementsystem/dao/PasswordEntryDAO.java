@@ -137,4 +137,43 @@ public class PasswordEntryDAO {
             return false;
         }
     }
+
+    public boolean updatePasswordEntry(PasswordEntry entry) {
+        String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ?";
+
+        try (Connection conn = databaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, entry.getWebsite());
+            stmt.setString(2, entry.getUsername());
+            stmt.setString(3, entry.getPassword());
+
+            if (entry.getCategory() != null) {
+                stmt.setInt(4, entry.getCategory().getId());
+            } else {
+                stmt.setNull(4, Types.INTEGER);
+            }
+
+            stmt.setInt(5, entry.getId());
+
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deletePasswordEntry(int entryId) {
+        String query = "DELETE FROM password_entries WHERE id = ?";
+
+        try (Connection conn = databaseConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setInt(1, entryId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

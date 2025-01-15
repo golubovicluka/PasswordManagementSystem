@@ -1,9 +1,11 @@
 package com.golubovicluka.passwordmanagementsystem.controller;
 
 import com.golubovicluka.passwordmanagementsystem.dao.CategoryDAO;
+import com.golubovicluka.passwordmanagementsystem.dao.PasswordEntryDAO;
 import com.golubovicluka.passwordmanagementsystem.model.Category;
 import com.golubovicluka.passwordmanagementsystem.model.PasswordEntry;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -50,6 +52,14 @@ public class AddPasswordController {
     private static final String INVALID_STYLE = "-fx-border-color: red; -fx-border-width: 2px;";
     private static final String SUCCESS_STYLE = "-fx-border-color: green; -fx-border-width: 2px;";
     private CategoryDAO categoryDAO;
+
+    @FXML
+    private Label titleLabel;
+
+    private boolean isEditMode = false;
+    private PasswordEntry editingEntry = null;
+
+    private final PasswordEntryDAO passwordEntryDAO = new PasswordEntryDAO();
 
     @FXML
     private void initialize() {
@@ -164,29 +174,51 @@ public class AddPasswordController {
             return;
         }
 
-        PasswordEntry newEntry = new PasswordEntry(username, password, website);
-        newEntry.setCategory(selectedCategory);
+        if (isEditMode) {
+            editingEntry.setWebsite(website);
+            editingEntry.setUsername(username);
+            editingEntry.setPassword(password);
+            editingEntry.setCategory(selectedCategory);
 
-        passwordsController.addPasswordEntry(newEntry);
-
-        messageLabel.setText("Password saved successfully!");
-        messageLabel.setStyle("-fx-text-fill: green;");
-
-        websiteField.setStyle(SUCCESS_STYLE);
-        usernameField.setStyle(SUCCESS_STYLE);
-        passwordField.setStyle(SUCCESS_STYLE);
-        if (visiblePasswordField != null) {
-            visiblePasswordField.setStyle(SUCCESS_STYLE);
-        }
-
-        new Thread(() -> {
-            try {
-                Thread.sleep(1500);
-                javafx.application.Platform.runLater(this::clearFields);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (passwordEntryDAO.updatePasswordEntry(editingEntry)) {
+                messageLabel.setText("Password updated successfully!");
+                messageLabel.setStyle("-fx-text-fill: green;");
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1500);
+                        Platform.runLater(this::handleBack);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            } else {
+                messageLabel.setText("Failed to update password");
+                messageLabel.setStyle("-fx-text-fill: red;");
             }
-        }).start();
+        } else {
+            PasswordEntry newEntry = new PasswordEntry(username, password, website);
+            newEntry.setCategory(selectedCategory);
+            passwordsController.addPasswordEntry(newEntry);
+
+            messageLabel.setText("Password saved successfully!");
+            messageLabel.setStyle("-fx-text-fill: green;");
+
+            websiteField.setStyle(SUCCESS_STYLE);
+            usernameField.setStyle(SUCCESS_STYLE);
+            passwordField.setStyle(SUCCESS_STYLE);
+            if (visiblePasswordField != null) {
+                visiblePasswordField.setStyle(SUCCESS_STYLE);
+            }
+
+            new Thread(() -> {
+                try {
+                    Thread.sleep(1500);
+                    javafx.application.Platform.runLater(this::clearFields);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
     }
 
     public void setPasswordsController(PasswordsController passwordsController) {
@@ -309,5 +341,20 @@ public class AddPasswordController {
     private void loadCategories() {
         List<Category> categories = categoryDAO.getCategoriesForUser(passwordsController.getCurrentUserId());
         categoryComboBox.setItems(FXCollections.observableArrayList(categories));
+    }
+
+    public void setEditMode(PasswordEntry entry) {
+        this.isEditMode = true;
+        this.editingEntry = entry;
+        titleLabel.setText("Edit Password Entry");
+        saveButton.setText("Update Password");
+
+        websiteField.setText(entry.getWebsite());
+        usernameField.setText(entry.getUsername());
+        passwordField.setText(entry.getPassword());
+        visiblePasswordField.setText(entry.getPassword());
+        if (entry.getCategory() != null) {
+            categoryComboBox.setValue(entry.getCategory());
+        }
     }
 }

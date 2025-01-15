@@ -84,17 +84,29 @@
 }
 
 .icon-button {
-    -fx-min-width: 30px;
-    -fx-min-height: 30px;
     -fx-background-color: transparent;
-    -fx-border-color: #cccccc;
-    -fx-border-radius: 4px;
-    -fx-font-size: 16px;
-    -fx-text-fill: #000000;
+    -fx-padding: 5;
 }
 
 .icon-button:hover {
     -fx-background-color: #f0f0f0;
+}
+
+.icon-button .ikonli-font-icon {
+    -fx-icon-color: #0d47a1;
+}
+
+.icon-button:hover .ikonli-font-icon {
+    -fx-icon-color: #002171;
+}
+
+/* Make delete icon red */
+.icon-button .delete-icon {
+    -fx-icon-color: #f44336;
+}
+
+.icon-button:hover .delete-icon {
+    -fx-icon-color: #d32f2f;
 }
 
 .secondary-button {

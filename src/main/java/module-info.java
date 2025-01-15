@@ -12,6 +12,7 @@ module com.golubovicluka.passwordmanagementsystem {
     requires com.fasterxml.jackson.databind;
     requires spring.security.crypto;
     requires javafx.base;
+    requires org.kordamp.ikonli.fontawesome5;
 
     opens com.golubovicluka.passwordmanagementsystem to javafx.fxml;
     opens com.golubovicluka.passwordmanagementsystem.controller to javafx.fxml;
