@@ -28,6 +28,7 @@ import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
+import com.golubovicluka.passwordmanagementsystem.exception.DatabaseException;
 
 public class PasswordsController {
     private final Image DEFAULT_FAVICON = new Image(
@@ -418,7 +419,7 @@ public class PasswordsController {
 
             AddPasswordController controller = fxmlLoader.getController();
             controller.setPasswordsController(this);
-            controller.setEditMode(entry); // New method to set up edit mode
+            controller.setEditMode(entry);
 
             Stage stage = (Stage) addPasswordButton.getScene().getWindow();
             stage.setTitle("Password Management - Edit Password");
@@ -444,8 +445,15 @@ public class PasswordsController {
 
         confirmDialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                if (passwordEntryDAO.deletePasswordEntry(entry.getId())) {
+                try {
+                    passwordEntryDAO.deletePasswordEntry(entry.getId());
                     masterData.remove(entry);
+                } catch (DatabaseException e) {
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("Error");
+                    errorAlert.setHeaderText("Database Error");
+                    errorAlert.setContentText("Failed to delete password entry: " + e.getMessage());
+                    errorAlert.showAndWait();
                 }
             }
         });
