@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.List;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 public class AddPasswordController {
     @FXML
     private TextField websiteField;
@@ -62,6 +64,9 @@ public class AddPasswordController {
     private final PasswordEntryDAO passwordEntryDAO = new PasswordEntryDAO();
 
     @FXML
+    private FontIcon togglePasswordIcon;
+
+    @FXML
     private void initialize() {
         setupValidation();
         setupPasswordToggle();
@@ -91,18 +96,27 @@ public class AddPasswordController {
     }
 
     private void setupPasswordToggle() {
-        visiblePasswordField.setManaged(false);
+        passwordField.setVisible(true);
+        passwordField.setManaged(true);
         visiblePasswordField.setVisible(false);
-        visiblePasswordField.promptTextProperty().bind(passwordField.promptTextProperty());
-        passwordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
+        visiblePasswordField.setManaged(false);
+
+        visiblePasswordField.textProperty().bindBidirectional(passwordField.textProperty());
 
         togglePasswordButton.setOnAction(event -> {
-            isPasswordVisible = !isPasswordVisible;
-            passwordField.setManaged(!isPasswordVisible);
-            passwordField.setVisible(!isPasswordVisible);
-            visiblePasswordField.setManaged(isPasswordVisible);
-            visiblePasswordField.setVisible(isPasswordVisible);
-            togglePasswordButton.setText(isPasswordVisible ? "🔒" : "👁");
+            if (passwordField.isVisible()) {
+                passwordField.setVisible(false);
+                passwordField.setManaged(false);
+                visiblePasswordField.setVisible(true);
+                visiblePasswordField.setManaged(true);
+                togglePasswordIcon.setIconLiteral("fas-eye-slash");
+            } else {
+                passwordField.setVisible(true);
+                passwordField.setManaged(true);
+                visiblePasswordField.setVisible(false);
+                visiblePasswordField.setManaged(false);
+                togglePasswordIcon.setIconLiteral("fas-eye");
+            }
         });
     }
 

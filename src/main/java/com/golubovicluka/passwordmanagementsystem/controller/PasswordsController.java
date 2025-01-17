@@ -432,7 +432,7 @@ public class PasswordsController {
     private void handleDeletePassword(PasswordEntry entry) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Confirm Delete");
-        confirmDialog.setHeaderText("Delete Password Entry");
+        confirmDialog.setHeaderText("Delete Password Entry?");
         confirmDialog.setContentText("Are you sure you want to delete this password entry?");
 
         Stage stage = (Stage) confirmDialog.getDialogPane().getScene().getWindow();
