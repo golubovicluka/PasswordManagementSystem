@@ -75,7 +75,8 @@
 }
 
 .error-field {
-    -fx-border-color: #f44336;
+    -fx-border-color: red;
+    -fx-border-width: 2px;
 }
 
 .hint-text {

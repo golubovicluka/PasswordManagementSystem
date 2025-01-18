@@ -30,14 +30,19 @@ public class UserDAO {
         return Optional.empty();
     }
 
-    public boolean createUser(String username, String passwordHash) {
+    public boolean createUser(String username, String hashedPassword) {
         String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
 
         try (Connection conn = databaseConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
             pstmt.setString(1, username);
-            pstmt.setString(2, passwordHash);
+            pstmt.setString(2, hashedPassword);
+
             return pstmt.executeUpdate() > 0;
+        } catch (SQLIntegrityConstraintViolationException e) {
+            // Username already exists
+            return false;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

@@ -3,6 +3,7 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
     fx:controller="com.golubovicluka.passwordmanagementsystem.controller.RegisterController"
@@ -14,7 +15,15 @@
     <Label text="Register New Account" styleClass="title-label" />
 
     <TextField fx:id="usernameField" promptText="Username" />
-    <PasswordField fx:id="passwordField" promptText="Password" />
+
+    <VBox spacing="10" alignment="CENTER">
+        <PasswordField fx:id="passwordField" promptText="Password" />
+        <Button fx:id="generatePasswordButton" text="Generate Secure Password"
+            styleClass="secondary-button" />
+        <Text fx:id="passwordHints" styleClass="hint-text"
+            text="Password must contain:&#10;• At least 8 characters&#10;• One uppercase letter&#10;• One number" />
+    </VBox>
+
     <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
 
     <Label fx:id="errorLabel"

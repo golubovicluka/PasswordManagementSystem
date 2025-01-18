@@ -89,7 +89,12 @@ public class AuthService {
      */
     public boolean registerUser(String username, String password) {
         try {
-            String hashedPassword = hashPassword(password);
+            // Check if username exists first
+            if (userDAO.findByUsername(username).isPresent()) {
+                return false;
+            }
+
+            String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
             return userDAO.createUser(username, hashedPassword);
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,8 +9,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import javafx.scene.input.Clipboard;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 
 import java.io.IOException;
+import java.util.Random;
 
 public class RegisterController {
     private final AuthService authService = new AuthService();
@@ -31,6 +36,9 @@ public class RegisterController {
     private Button backToLoginButton;
 
     @FXML
+    private Button generatePasswordButton;
+
+    @FXML
     private Label errorLabel;
 
     @FXML
@@ -38,6 +46,7 @@ public class RegisterController {
         registerButton.setOnAction(event -> handleRegister());
         backToLoginButton.setOnAction(event -> backToLogin());
         errorLabel.setVisible(false);
+        generatePasswordButton.setOnAction(event -> generateAndSetPassword());
     }
 
     private void handleRegister() {
@@ -45,20 +54,45 @@ public class RegisterController {
         String password = passwordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
 
+        // Clear previous error state
+        errorLabel.setVisible(false);
+        usernameField.getStyleClass().remove("error-field");
+        passwordField.getStyleClass().remove("error-field");
+        confirmPasswordField.getStyleClass().remove("error-field");
+
         if (username.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
             showError("Please fill in all fields");
+            if (username.isEmpty())
+                usernameField.getStyleClass().add("error-field");
+            if (password.isEmpty())
+                passwordField.getStyleClass().add("error-field");
+            if (confirmPassword.isEmpty())
+                confirmPasswordField.getStyleClass().add("error-field");
             return;
         }
 
         if (!password.equals(confirmPassword)) {
             showError("Passwords do not match");
+            passwordField.getStyleClass().add("error-field");
+            confirmPasswordField.getStyleClass().add("error-field");
             return;
         }
 
-        if (authService.registerUser(username, password)) {
-            backToLogin();
-        } else {
-            showError("Username already exists or registration failed");
+        try {
+            if (authService.registerUser(username, password)) {
+                Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                successAlert.setTitle("Registration Successful");
+                successAlert.setHeaderText(null);
+                successAlert.setContentText("Account created successfully! You can now log in.");
+                successAlert.showAndWait();
+                backToLogin();
+            } else {
+                showError("Username already exists");
+                usernameField.getStyleClass().add("error-field");
+            }
+        } catch (Exception e) {
+            showError("An error occurred during registration. Please try again.");
+            e.printStackTrace();
         }
     }
 
@@ -79,5 +113,52 @@ public class RegisterController {
             e.printStackTrace();
             showError("Error returning to login page");
         }
+    }
+
+    private void generateAndSetPassword() {
+        String generatedPassword = generateSecurePassword();
+        passwordField.setText(generatedPassword);
+        confirmPasswordField.setText(generatedPassword);
+
+        final Clipboard clipboard = Clipboard.getSystemClipboard();
+        final ClipboardContent content = new ClipboardContent();
+        content.putString(generatedPassword);
+        clipboard.setContent(content);
+
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.setTitle("Password Generated");
+        alert.setHeaderText(null);
+        alert.setContentText("A secure password has been generated and copied to your clipboard.");
+        alert.showAndWait();
+    }
+
+    private String generateSecurePassword() {
+        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+
+        password.append(upperCase.charAt(random.nextInt(upperCase.length())));
+        password.append(lowerCase.charAt(random.nextInt(lowerCase.length())));
+        password.append(numbers.charAt(random.nextInt(numbers.length())));
+        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
+
+        String allChars = upperCase + lowerCase + numbers + specialChars;
+        while (password.length() < 12) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+
+        return new String(passwordArray);
     }
 }
