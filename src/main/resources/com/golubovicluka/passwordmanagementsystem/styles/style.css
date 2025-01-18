@@ -101,7 +101,6 @@
     -fx-icon-color: #002171;
 }
 
-/* Make delete icon red */
 .icon-button .delete-icon {
     -fx-icon-color: #f44336;
 }

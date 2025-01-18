@@ -295,6 +295,7 @@ public class PasswordsController {
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
         loadPasswordEntries();
+        loadCategoryFilters();
     }
 
     private void loadPasswordEntries() {
@@ -365,7 +366,7 @@ public class PasswordsController {
 
     private void loadCategoryFilters() {
         CategoryDAO categoryDAO = new CategoryDAO();
-        List<Category> categories = categoryDAO.getAllCategories();
+        List<Category> categories = categoryDAO.getCategoriesForUser(currentUserId);
 
         categoryFilterPane.getChildren().clear();
 

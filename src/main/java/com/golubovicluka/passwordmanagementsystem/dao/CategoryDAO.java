@@ -71,11 +71,11 @@ public class CategoryDAO {
                 ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Category category = new Category();
-                category.setId(rs.getInt("category_id"));
-                category.setName(rs.getString("name"));
-                category.setDescription(rs.getString("description"));
-                categories.add(category);
+                categories.add(new Category(
+                        rs.getInt("category_id"),
+                        rs.getInt("user_id"),
+                        rs.getString("name"),
+                        rs.getString("description")));
             }
         } catch (SQLException e) {
             e.printStackTrace();

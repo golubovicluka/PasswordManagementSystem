@@ -41,7 +41,6 @@ public class UserDAO {
 
             return pstmt.executeUpdate() > 0;
         } catch (SQLIntegrityConstraintViolationException e) {
-            // Username already exists
             return false;
         } catch (SQLException e) {
             e.printStackTrace();

@@ -89,7 +89,6 @@ public class AuthService {
      */
     public boolean registerUser(String username, String password) {
         try {
-            // Check if username exists first
             if (userDAO.findByUsername(username).isPresent()) {
                 return false;
             }

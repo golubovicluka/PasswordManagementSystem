@@ -13,6 +13,7 @@ import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.IOException;
 import java.util.Random;
@@ -42,11 +43,40 @@ public class RegisterController {
     private Label errorLabel;
 
     @FXML
+    private TextField visiblePasswordField;
+
+    @FXML
+    private TextField visibleConfirmPasswordField;
+
+    @FXML
+    private Button togglePasswordButton;
+
+    @FXML
+    private FontIcon togglePasswordIcon;
+
+    @FXML
     private void initialize() {
         registerButton.setOnAction(event -> handleRegister());
         backToLoginButton.setOnAction(event -> backToLogin());
         errorLabel.setVisible(false);
         generatePasswordButton.setOnAction(event -> generateAndSetPassword());
+
+        passwordField.textProperty().bindBidirectional(visiblePasswordField.textProperty());
+        confirmPasswordField.textProperty().bindBidirectional(visibleConfirmPasswordField.textProperty());
+
+        togglePasswordButton.setOnAction(event -> {
+            boolean passwordIsVisible = visiblePasswordField.isVisible();
+            visiblePasswordField.setVisible(!passwordIsVisible);
+            visiblePasswordField.setManaged(!passwordIsVisible);
+            passwordField.setVisible(passwordIsVisible);
+            passwordField.setManaged(passwordIsVisible);
+            visibleConfirmPasswordField.setVisible(!passwordIsVisible);
+            visibleConfirmPasswordField.setVisible(!passwordIsVisible);
+            visibleConfirmPasswordField.setManaged(!passwordIsVisible);
+            confirmPasswordField.setVisible(passwordIsVisible);
+            confirmPasswordField.setManaged(passwordIsVisible);
+            togglePasswordIcon.setIconLiteral(passwordIsVisible ? "fas-eye" : "fas-eye-slash");
+        });
     }
 
     private void handleRegister() {
@@ -54,7 +84,6 @@ public class RegisterController {
         String password = passwordField.getText().trim();
         String confirmPassword = confirmPasswordField.getText().trim();
 
-        // Clear previous error state
         errorLabel.setVisible(false);
         usernameField.getStyleClass().remove("error-field");
         passwordField.getStyleClass().remove("error-field");

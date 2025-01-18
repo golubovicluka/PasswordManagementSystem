@@ -4,6 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
     fx:controller="com.golubovicluka.passwordmanagementsystem.controller.RegisterController"
@@ -17,14 +18,35 @@
     <TextField fx:id="usernameField" promptText="Username" />
 
     <VBox spacing="10" alignment="CENTER">
-        <PasswordField fx:id="passwordField" promptText="Password" />
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <StackPane HBox.hgrow="ALWAYS">
+                <PasswordField fx:id="passwordField" promptText="Password" />
+                <TextField fx:id="visiblePasswordField" promptText="Password" visible="false"
+                    managed="false" />
+            </StackPane>
+            <Button fx:id="togglePasswordButton" styleClass="icon-button">
+                <graphic>
+                    <FontIcon fx:id="togglePasswordIcon" iconLiteral="fas-eye" iconSize="18" />
+                </graphic>
+                <tooltip>
+                    <Tooltip text="Show/Hide Password" />
+                </tooltip>
+            </Button>
+        </HBox>
+
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <StackPane HBox.hgrow="ALWAYS">
+                <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
+                <TextField fx:id="visibleConfirmPasswordField" promptText="Confirm Password"
+                    visible="false" managed="false" />
+            </StackPane>
+        </HBox>
+
         <Button fx:id="generatePasswordButton" text="Generate Secure Password"
             styleClass="secondary-button" />
         <Text fx:id="passwordHints" styleClass="hint-text"
             text="Password must contain:&#10;• At least 8 characters&#10;• One uppercase letter&#10;• One number" />
     </VBox>
-
-    <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
 
     <Label fx:id="errorLabel"
         styleClass="error-label"
