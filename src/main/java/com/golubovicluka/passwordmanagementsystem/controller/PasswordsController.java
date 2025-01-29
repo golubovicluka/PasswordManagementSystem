@@ -12,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -26,9 +27,13 @@ import java.util.List;
 import com.golubovicluka.passwordmanagementsystem.dao.CategoryDAO;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
+import javafx.scene.control.Label;
 
 import java.io.IOException;
 import com.golubovicluka.passwordmanagementsystem.exception.DatabaseException;
+import javafx.stage.Popup;
+import javafx.application.Platform;
+import javafx.geometry.Point2D;
 
 public class PasswordsController {
     private final Image DEFAULT_FAVICON = new Image(
@@ -119,22 +124,50 @@ public class PasswordsController {
                         return;
 
                     if (event.isControlDown()) {
-
                         final Clipboard clipboard = Clipboard.getSystemClipboard();
                         final ClipboardContent content = new ClipboardContent();
                         content.putString(getItem());
                         clipboard.setContent(content);
 
-                        Tooltip copiedTooltip = new Tooltip("Password copied!");
-                        setTooltip(copiedTooltip);
+                        Popup popup = new Popup();
+                        popup.setAutoHide(true);
+
+                        VBox container = new VBox();
+                        container.getStylesheets()
+                                .add(getClass()
+                                        .getResource("/com/golubovicluka/passwordmanagementsystem/styles/style.css")
+                                        .toExternalForm());
+                        container.getStyleClass().add("copy-notification");
+                        container.setAlignment(Pos.CENTER);
+                        container.setMinWidth(250);
+                        container.setMinHeight(50);
+
+                        HBox contentBox = new HBox(10);
+                        contentBox.getStyleClass().add("content-box");
+                        contentBox.setAlignment(Pos.CENTER);
+
+                        FontIcon checkIcon = new FontIcon(FontAwesomeSolid.CHECK_CIRCLE);
+                        checkIcon.getStyleClass().add("copy-notification-icon");
+
+                        Label popupLabel = new Label("Password copied to clipboard!");
+                        popupLabel.getStyleClass().add("copy-notification-label");
+
+                        contentBox.getChildren().addAll(checkIcon, popupLabel);
+                        container.getChildren().add(contentBox);
+                        popup.getContent().add(container);
+
+                        Point2D point = this.localToScreen(event.getX(), event.getY());
+                        popup.show(getScene().getWindow(),
+                                point.getX() - 125,
+                                point.getY() - 70);
+
                         new Thread(() -> {
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(2000);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                            javafx.application.Platform
-                                    .runLater(() -> setTooltip(isRevealed ? revealedTooltip : hiddenTooltip));
+                            Platform.runLater(() -> popup.hide());
                         }).start();
                     } else {
                         isRevealed = !isRevealed;
