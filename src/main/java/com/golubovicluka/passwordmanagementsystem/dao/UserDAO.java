@@ -5,7 +5,16 @@ import java.sql.*;
 import java.util.Optional;
 
 public class UserDAO {
-    private final DatabaseConnection databaseConnection = new DatabaseConnection();
+    private final DatabaseConnection databaseConnection;
+
+    public UserDAO() {
+        this.databaseConnection = new DatabaseConnection();
+    }
+
+    // Add constructor for testing
+    public UserDAO(DatabaseConnection databaseConnection) {
+        this.databaseConnection = databaseConnection;
+    }
 
     public Optional<User> findByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";

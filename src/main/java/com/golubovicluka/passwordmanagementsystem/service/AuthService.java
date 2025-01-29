@@ -27,6 +27,11 @@ public class AuthService {
         this.userDAO = new UserDAO();
     }
 
+    // Add constructor for testing
+    public AuthService(UserDAO userDAO) {
+        this.userDAO = userDAO;
+    }
+
     /**
      * Validates user credentials asynchronously.
      * This method checks if the provided username exists and if the password
