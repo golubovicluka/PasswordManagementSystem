@@ -11,7 +11,6 @@ public class UserDAO {
         this.databaseConnection = new DatabaseConnection();
     }
 
-    // Add constructor for testing
     public UserDAO(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
