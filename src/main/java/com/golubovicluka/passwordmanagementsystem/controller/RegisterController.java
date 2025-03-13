@@ -18,42 +18,64 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import java.io.IOException;
 import java.util.Random;
 
+/**
+ * Controller class for the user registration view of the Password Management System.
+ * Handles user registration, password generation, and navigation between registration
+ * and login views. This controller manages the registration form's UI elements and
+ * their associated behaviors.
+ */
 public class RegisterController {
+    /** Service responsible for handling user authentication and registration */
     private final AuthService authService = new AuthService();
 
+    /** Text field for entering username */
     @FXML
     private TextField usernameField;
 
+    /** Password field for entering password */
     @FXML
     private PasswordField passwordField;
 
+    /** Password field for confirming password */
     @FXML
     private PasswordField confirmPasswordField;
 
+    /** Button to submit registration */
     @FXML
     private Button registerButton;
 
+    /** Button to return to login view */
     @FXML
     private Button backToLoginButton;
 
+    /** Button to generate a secure password */
     @FXML
     private Button generatePasswordButton;
 
+    /** Label for displaying error messages */
     @FXML
     private Label errorLabel;
 
+    /** Text field for visible password entry */
     @FXML
     private TextField visiblePasswordField;
 
+    /** Text field for visible password confirmation */
     @FXML
     private TextField visibleConfirmPasswordField;
 
+    /** Button to toggle password visibility */
     @FXML
     private Button togglePasswordButton;
 
+    /** Icon for password visibility toggle */
     @FXML
     private FontIcon togglePasswordIcon;
 
+    /**
+     * Initializes the registration form and sets up event handlers for UI elements.
+     * Configures button actions, password visibility toggle, and password field bindings.
+     */
     @FXML
     private void initialize() {
         registerButton.setOnAction(event -> handleRegister());
@@ -79,6 +101,11 @@ public class RegisterController {
         });
     }
 
+    /**
+     * Handles the registration process when triggered by the register button.
+     * Validates input fields, checks password matching, and attempts to register the user.
+     * Shows appropriate success or error messages based on the registration result.
+     */
     private void handleRegister() {
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
@@ -125,11 +152,20 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Displays an error message in the error label.
+     *
+     * @param message The error message to display
+     */
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
     }
 
+    /**
+     * Handles navigation back to the login view when the back button is clicked.
+     * Loads and displays the login form in a new scene.
+     */
     private void backToLogin() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
@@ -144,6 +180,10 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Generates a secure password and sets it in both password fields.
+     * Copies the generated password to the system clipboard and shows a notification.
+     */
     private void generateAndSetPassword() {
         String generatedPassword = generateSecurePassword();
         passwordField.setText(generatedPassword);
@@ -161,6 +201,17 @@ public class RegisterController {
         alert.showAndWait();
     }
 
+    /**
+     * Generates a secure password with the following characteristics:
+     * - At least 12 characters long
+     * - Contains at least one uppercase letter
+     * - Contains at least one lowercase letter
+     * - Contains at least one number
+     * - Contains at least one special character
+     * - Characters are randomly shuffled
+     *
+     * @return A secure password string meeting the specified criteria
+     */
     private String generateSecurePassword() {
         String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String lowerCase = "abcdefghijklmnopqrstuvwxyz";

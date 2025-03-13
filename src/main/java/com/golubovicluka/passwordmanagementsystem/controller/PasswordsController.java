@@ -35,52 +35,89 @@ import javafx.stage.Popup;
 import javafx.application.Platform;
 import javafx.geometry.Point2D;
 
+/**
+ * Controller class for managing password entries in the Password Management System.
+ * Handles the display, filtering, and management of password entries including adding,
+ * editing, deleting, and searching passwords. This controller manages the main password
+ * management interface and its associated functionality.
+ */
 public class PasswordsController {
+    /** Default favicon image used when website favicon cannot be loaded */
     private final Image DEFAULT_FAVICON = new Image(
             getClass().getResourceAsStream("/com/golubovicluka/passwordmanagementsystem/images/default-favicon.png"));
 
+    /** Table view displaying password entries */
     @FXML
     private TableView<PasswordEntry> passwordTable;
 
+    /** Column displaying usernames */
     @FXML
     private TableColumn<PasswordEntry, String> usernameColumn;
 
+    /** Column displaying passwords */
     @FXML
     private TableColumn<PasswordEntry, String> passwordColumn;
 
+    /** Column displaying website URLs */
     @FXML
     private TableColumn<PasswordEntry, String> websiteColumn;
 
+    /** Column displaying categories */
     @FXML
     private TableColumn<PasswordEntry, String> categoryColumn;
 
+    /** Button to log out of the application */
     @FXML
     private Button logoutButton;
 
+    /** Text field for searching password entries */
     @FXML
     private TextField searchField;
 
+    /** Button to add new password entries */
     @FXML
     private Button addPasswordButton;
 
+    /** Flow pane containing category filter buttons */
     @FXML
     private FlowPane categoryFilterPane;
 
+    /** Column containing action buttons for each entry */
     @FXML
     private TableColumn<PasswordEntry, Void> actionsColumn;
 
+    /** Observable list containing all password entries */
     private ObservableList<PasswordEntry> masterData;
+    
+    /** Filtered list for search functionality */
     private FilteredList<PasswordEntry> filteredData;
+    
+    /** Data access object for password entries */
     private final PasswordEntryDAO passwordEntryDAO;
+    
+    /** ID of the currently logged-in user */
     private int currentUserId;
+    
+    /** Filtered list for category filtering */
     private FilteredList<PasswordEntry> filteredEntries;
+    
+    /** Current search text for filtering entries */
     private String currentSearchText = "";
+    
+    /** Currently selected category for filtering */
     private Category selectedCategory = null;
 
+    /**
+     * Constructs a new PasswordsController and initializes the password entry DAO.
+     */
     public PasswordsController() {
         this.passwordEntryDAO = new PasswordEntryDAO();
     }
 
+    /**
+     * Initializes the controller and sets up all UI components and event handlers.
+     * Configures table columns, button handlers, search functionality, and category filters.
+     */
     @FXML
     private void initialize() {
         setupTableColumns();
@@ -108,6 +145,10 @@ public class PasswordsController {
         });
     }
 
+    /**
+     * Sets up the table columns with their respective cell factories and properties.
+     * Configures special cell rendering for passwords, websites, and action buttons.
+     */
     private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
@@ -299,6 +340,13 @@ public class PasswordsController {
         });
     }
 
+    /**
+     * Loads and displays a favicon for a given website URL.
+     * If the favicon cannot be loaded, displays a default favicon.
+     *
+     * @param website The website URL to load the favicon for
+     * @param imageView The ImageView to display the favicon
+     */
     private void loadFavicon(String website, ImageView imageView) {
         new Thread(() -> {
             try {
@@ -320,17 +368,28 @@ public class PasswordsController {
         }).start();
     }
 
+    /**
+     * Sets up event handlers for the logout and add password buttons.
+     */
     private void setupButtonHandlers() {
         logoutButton.setOnAction(event -> handleLogout());
         addPasswordButton.setOnAction(event -> handleAddPassword());
     }
 
+    /**
+     * Sets the current user ID and loads the user's password entries and category filters.
+     *
+     * @param userId The ID of the currently logged-in user
+     */
     public void setCurrentUserId(int userId) {
         this.currentUserId = userId;
         loadPasswordEntries();
         loadCategoryFilters();
     }
 
+    /**
+     * Loads all password entries for the current user from the database.
+     */
     private void loadPasswordEntries() {
         masterData.clear();
 
@@ -338,6 +397,9 @@ public class PasswordsController {
         masterData.addAll(entries);
     }
 
+    /**
+     * Handles the logout process by navigating back to the login view.
+     */
     private void handleLogout() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
@@ -352,6 +414,9 @@ public class PasswordsController {
         }
     }
 
+    /**
+     * Opens the add password dialog for creating a new password entry.
+     */
     private void handleAddPassword() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
@@ -370,6 +435,9 @@ public class PasswordsController {
         }
     }
 
+    /**
+     * Sets up the search functionality to filter password entries based on user input.
+     */
     private void setupSearch() {
         searchField.textProperty().addListener((observable, oldValue, newValue) -> {
             filteredData.setPredicate(passwordEntry -> {
@@ -387,16 +455,29 @@ public class PasswordsController {
         });
     }
 
+    /**
+     * Adds a new password entry to the database and updates the UI.
+     *
+     * @param entry The password entry to add
+     */
     public void addPasswordEntry(PasswordEntry entry) {
         if (passwordEntryDAO.addPasswordEntry(entry, currentUserId)) {
             masterData.add(entry);
         }
     }
 
+    /**
+     * Returns the ID of the currently logged-in user.
+     *
+     * @return The current user's ID
+     */
     public int getCurrentUserId() {
         return currentUserId;
     }
 
+    /**
+     * Loads and displays category filter buttons for the current user.
+     */
     private void loadCategoryFilters() {
         CategoryDAO categoryDAO = new CategoryDAO();
         List<Category> categories = categoryDAO.getCategoriesForUser(currentUserId);
@@ -412,6 +493,12 @@ public class PasswordsController {
         }
     }
 
+    /**
+     * Creates a button for filtering password entries by category.
+     *
+     * @param category The category to filter by, or null for "All"
+     * @return A button configured for category filtering
+     */
     private Button createCategoryButton(Category category) {
         Button button = new Button(category == null ? "All" : category.getName());
         button.getStyleClass().add("category-filter-button");
@@ -429,6 +516,9 @@ public class PasswordsController {
         return button;
     }
 
+    /**
+     * Updates the filtered entries based on current search text and selected category.
+     */
     private void updateFilters() {
         filteredEntries.setPredicate(entry -> {
             boolean matchesSearch = currentSearchText.isEmpty() ||
@@ -444,6 +534,11 @@ public class PasswordsController {
         });
     }
 
+    /**
+     * Opens the edit password dialog for modifying an existing password entry.
+     *
+     * @param entry The password entry to edit
+     */
     private void handleEditPassword(PasswordEntry entry) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
@@ -463,6 +558,11 @@ public class PasswordsController {
         }
     }
 
+    /**
+     * Handles the deletion of a password entry after user confirmation.
+     *
+     * @param entry The password entry to delete
+     */
     private void handleDeletePassword(PasswordEntry entry) {
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Confirm Delete");

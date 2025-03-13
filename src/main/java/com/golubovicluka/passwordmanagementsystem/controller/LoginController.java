@@ -15,25 +15,42 @@ import com.golubovicluka.passwordmanagementsystem.service.AuthService;
 import javafx.application.Platform;
 import com.golubovicluka.passwordmanagementsystem.model.User;
 
+/**
+ * Controller class for the login view of the Password Management System.
+ * Handles user authentication, login form interactions, and navigation to other views.
+ * This controller manages the login form's UI elements and their associated behaviors.
+ */
 public class LoginController {
+    /** Service responsible for handling user authentication */
     private final AuthService authService = new AuthService();
+    
+    /** Currently logged-in user instance */
     private User loggedInUser;
 
+    /** Text field for entering username */
     @FXML
     private TextField usernameField;
 
+    /** Password field for entering user password */
     @FXML
     private PasswordField passwordField;
 
+    /** Button to trigger login process */
     @FXML
     private Button loginButton;
 
+    /** Button to navigate to registration view */
     @FXML
     private Button registerButton;
 
+    /** Label for displaying error messages */
     @FXML
     private Label errorLabel;
 
+    /**
+     * Initializes the login form and sets up event handlers for UI elements.
+     * Configures button actions, keyboard shortcuts, and input field listeners.
+     */
     @FXML
     private void initialize() {
         loginButton.setOnAction(event -> handleLogin());
@@ -66,6 +83,11 @@ public class LoginController {
         });
     }
 
+    /**
+     * Handles the login process when triggered by button click or Enter key.
+     * Validates input fields, authenticates user credentials, and navigates to the passwords view
+     * upon successful authentication.
+     */
     private void handleLogin() {
         String username = usernameField.getText().trim();
         String password = passwordField.getText().trim();
@@ -131,11 +153,20 @@ public class LoginController {
                 });
     }
 
+    /**
+     * Displays an error message in the error label.
+     * 
+     * @param message The error message to display
+     */
     private void showError(String message) {
         errorLabel.setText(message);
         errorLabel.setVisible(true);
     }
 
+    /**
+     * Handles navigation to the registration view when the register button is clicked.
+     * Loads and displays the registration form in a new scene.
+     */
     private void handleRegister() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(
