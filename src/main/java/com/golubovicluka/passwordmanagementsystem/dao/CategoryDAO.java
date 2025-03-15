@@ -6,13 +6,27 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object for Category entities.
+ * Handles database operations related to categories including retrieving, creating,
+ * and managing categories for users.
+ */
 public class CategoryDAO {
     private final DatabaseConnection databaseConnection;
 
+    /**
+     * Default constructor that initializes a new database connection.
+     */
     public CategoryDAO() {
         this.databaseConnection = new DatabaseConnection();
     }
 
+    /**
+     * Retrieves all categories associated with a specific user.
+     *
+     * @param userId The ID of the user whose categories to retrieve
+     * @return A list of Category objects belonging to the specified user
+     */
     public List<Category> getCategoriesForUser(int userId) {
         List<Category> categories = new ArrayList<>();
         String query = "SELECT * FROM categories WHERE user_id = ?";
@@ -36,6 +50,14 @@ public class CategoryDAO {
         return categories;
     }
 
+    /**
+     * Creates a new category for a user.
+     *
+     * @param userId The ID of the user who owns this category
+     * @param name The name of the category
+     * @param description The description of the category
+     * @return The newly created Category object, or null if creation failed
+     */
     public Category createCategory(int userId, String name, String description) {
         String query = "INSERT INTO categories (user_id, name, description) VALUES (?, ?, ?)";
 
@@ -62,6 +84,11 @@ public class CategoryDAO {
         return null;
     }
 
+    /**
+     * Retrieves all categories from the database.
+     *
+     * @return A list of all Category objects in the database
+     */
     public List<Category> getAllCategories() {
         List<Category> categories = new ArrayList<>();
         String query = "SELECT * FROM categories";

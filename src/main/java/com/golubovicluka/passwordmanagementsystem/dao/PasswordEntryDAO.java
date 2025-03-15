@@ -12,10 +12,23 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object for PasswordEntry entities.
+ * Handles database operations related to password entries including retrieving, creating,
+ * updating, and deleting password entries for users.
+ */
 public class PasswordEntryDAO {
     private static final Logger logger = LoggerFactory.getLogger(PasswordEntryDAO.class);
     private final DatabaseConnection databaseConnection = new DatabaseConnection();
 
+    /**
+     * Retrieves all password entries for a specific user as an ObservableList.
+     * This method is specifically designed for JavaFX UI binding.
+     *
+     * @param userId The ID of the user whose password entries to retrieve
+     * @return An ObservableList of PasswordEntry objects belonging to the specified user
+     * @throws DatabaseException If there is an error retrieving the password entries
+     */
     public ObservableList<PasswordEntry> getAllPasswordEntriesForUser(int userId) {
         ObservableList<PasswordEntry> entries = FXCollections.observableArrayList();
         String query = "SELECT pe.*, c.category_id, c.name AS category_name, c.description AS category_description " +
@@ -39,6 +52,13 @@ public class PasswordEntryDAO {
         return entries;
     }
 
+    /**
+     * Retrieves all password entries for a specific user as a standard List.
+     *
+     * @param userId The ID of the user whose password entries to retrieve
+     * @return A List of PasswordEntry objects belonging to the specified user
+     * @throws DatabaseException If there is an error retrieving the password entries
+     */
     public List<PasswordEntry> getPasswordsForUser(int userId) {
         List<PasswordEntry> passwords = new ArrayList<>();
         String query = "SELECT p.*, c.name as category_name, " +
@@ -63,6 +83,14 @@ public class PasswordEntryDAO {
         return passwords;
     }
 
+    /**
+     * Adds a new password entry to the database for a specific user.
+     *
+     * @param entry The PasswordEntry object to add
+     * @param userId The ID of the user who owns this password entry
+     * @return true if the password entry was successfully added, false otherwise
+     * @throws DatabaseException If there is an error adding the password entry
+     */
     public boolean addPasswordEntry(PasswordEntry entry, int userId) {
         String query = "INSERT INTO password_entries (user_id, website, username, password, category_id) VALUES (?, ?, ?, ?, ?)";
 
@@ -87,6 +115,13 @@ public class PasswordEntryDAO {
         }
     }
 
+    /**
+     * Updates an existing password entry in the database.
+     *
+     * @param entry The PasswordEntry object with updated information
+     * @return true if the password entry was successfully updated, false otherwise
+     * @throws DatabaseException If there is an error updating the password entry
+     */
     public boolean updatePasswordEntry(PasswordEntry entry) {
         String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ?";
 
@@ -112,6 +147,13 @@ public class PasswordEntryDAO {
         }
     }
 
+    /**
+     * Deletes a password entry from the database.
+     *
+     * @param entryId The ID of the password entry to delete
+     * @return true if the password entry was successfully deleted, false otherwise
+     * @throws DatabaseException If there is an error deleting the password entry
+     */
     public boolean deletePasswordEntry(int entryId) {
         String query = "DELETE FROM password_entries WHERE id = ?";
 
@@ -126,6 +168,14 @@ public class PasswordEntryDAO {
         }
     }
 
+    /**
+     * Maps a database result set to a PasswordEntry object.
+     *
+     * @param rs The ResultSet containing password entry data
+     * @param userId The ID of the user who owns this password entry
+     * @return A PasswordEntry object populated with data from the ResultSet
+     * @throws SQLException If there is an error accessing the ResultSet
+     */
     private PasswordEntry mapResultSetToPasswordEntry(ResultSet rs, int userId) throws SQLException {
         Category category = null;
         if (rs.getObject("category_id") != null) {
