@@ -44,8 +44,16 @@
 
         <Button fx:id="generatePasswordButton" text="Generate Secure Password"
             styleClass="secondary-button" />
-        <Text fx:id="passwordHints" styleClass="hint-text"
-            text="Password must contain:&#10;• At least 8 characters&#10;• One uppercase letter&#10;• One number" />
+
+        <ScrollPane fx:id="passwordTipsScrollPane" fitToWidth="true" maxHeight="150"
+            styleClass="transparent-scroll-pane">
+            <Text fx:id="passwordHints" styleClass="hint-text" wrappingWidth="400"
+                text="Loading password tips..." />
+        </ScrollPane>
+        <!-- <ScrollPane fitToWidth="true" maxHeight="150" styleClass="transparent-scroll-pane"> -->
+        <!-- <Text fx:id="passwordHints" styleClass="hint-text" wrappingWidth="400"
+                text="Loading password tips..." />
+        </ScrollPane> -->
     </VBox>
 
     <Label fx:id="errorLabel"

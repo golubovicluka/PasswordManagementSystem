@@ -195,4 +195,22 @@ public class PasswordEntry {
     public void setTitle(String title) {
         this.title = title;
     }
+
+    /**
+     * Gets the user ID associated with this password entry
+     *
+     * @return the ID of the user who owns this password entry
+     */
+    public int getUserId() {
+        return userId;
+    }
+
+    /**
+     * Sets the user ID for this password entry
+     *
+     * @param userId the ID of the user who owns this password entry
+     */
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 }

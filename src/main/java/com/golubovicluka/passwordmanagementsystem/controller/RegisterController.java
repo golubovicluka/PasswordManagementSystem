@@ -11,20 +11,31 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.text.Text;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Random;
 
 /**
- * Controller class for the user registration view of the Password Management System.
- * Handles user registration, password generation, and navigation between registration
- * and login views. This controller manages the registration form's UI elements and
+ * Controller class for the user registration view of the Password Management
+ * System.
+ * Handles user registration, password generation, and navigation between
+ * registration
+ * and login views. This controller manages the registration form's UI elements
+ * and
  * their associated behaviors.
  */
 public class RegisterController {
+    private static final Logger log = LoggerFactory.getLogger(RegisterController.class);
     /** Service responsible for handling user authentication and registration */
     private final AuthService authService = new AuthService();
 
@@ -35,6 +46,10 @@ public class RegisterController {
     /** Password field for entering password */
     @FXML
     private PasswordField passwordField;
+
+    /** Text field for displaying password hints */
+    @FXML
+    private Text passwordHints;
 
     /** Password field for confirming password */
     @FXML
@@ -74,7 +89,8 @@ public class RegisterController {
 
     /**
      * Initializes the registration form and sets up event handlers for UI elements.
-     * Configures button actions, password visibility toggle, and password field bindings.
+     * Configures button actions, password visibility toggle, and password field
+     * bindings.
      */
     @FXML
     private void initialize() {
@@ -99,11 +115,66 @@ public class RegisterController {
             confirmPasswordField.setManaged(passwordIsVisible);
             togglePasswordIcon.setIconLiteral(passwordIsVisible ? "fas-eye" : "fas-eye-slash");
         });
+
+        loadPasswordTips();
+    }
+
+    /**
+     * Loads password tips from Microsoft's website to display password creation
+     * guidelines.
+     * If the website is not accessible, falls back to local password tips.
+     * The tips are displayed in the passwordHints text area.
+     */
+    private void loadPasswordTips() {
+        passwordHints.setText("Loading password tips...");
+        String url = "https://support.microsoft.com/en-us/account-billing/how-to-create-a-strong-password-for-your-microsoft-account-f67e4ddd-0dbe-cd75-cebe-0cfda3cf7386";
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+                    .get();
+
+            System.out.println("Document: " + doc.toString());
+
+            String intro = doc.select("section.ocpIntroduction > p:not(:empty)").first().text();
+
+            Elements tips = doc.select("section.ocpIntroduction > ul > li > p");
+
+            StringBuilder tipsText = new StringBuilder(intro);
+            tipsText.append("\n\n");
+
+            for (Element tip : tips) {
+                tipsText.append("• ").append(tip.text()).append("\n");
+            }
+
+            passwordHints.setText(tipsText.toString());
+
+        } catch (IOException e) {
+            passwordHints.setText(getFallbackPasswordTips());
+            System.err.println("Error fetching data: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Provides a set of default password tips when online tips cannot be loaded.
+     * These tips cover essential aspects of creating strong passwords.
+     *
+     * @return A string containing basic password creation guidelines
+     */
+    private String getFallbackPasswordTips() {
+        return "Strong Password Essentials:\n"
+                + "• Minimum 12 characters\n"
+                + "• Mix uppercase & lowercase\n"
+                + "• Include numbers & symbols\n"
+                + "• Avoid personal information\n"
+                + "• Use unique passwords per account\n"
+                + "• Consider passphrases";
     }
 
     /**
      * Handles the registration process when triggered by the register button.
-     * Validates input fields, checks password matching, and attempts to register the user.
+     * Validates input fields, checks password matching, and attempts to register
+     * the user.
      * Shows appropriate success or error messages based on the registration result.
      */
     private void handleRegister() {
@@ -182,7 +253,8 @@ public class RegisterController {
 
     /**
      * Generates a secure password and sets it in both password fields.
-     * Copies the generated password to the system clipboard and shows a notification.
+     * Copies the generated password to the system clipboard and shows a
+     * notification.
      */
     private void generateAndSetPassword() {
         String generatedPassword = generateSecurePassword();
