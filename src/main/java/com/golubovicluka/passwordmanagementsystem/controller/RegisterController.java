@@ -134,8 +134,6 @@ public class RegisterController {
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
                     .get();
 
-            System.out.println("Document: " + doc.toString());
-
             String intro = doc.select("section.ocpIntroduction > p:not(:empty)").first().text();
 
             Elements tips = doc.select("section.ocpIntroduction > ul > li > p");
