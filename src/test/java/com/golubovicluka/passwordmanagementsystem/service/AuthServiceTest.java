@@ -3,6 +3,7 @@ package com.golubovicluka.passwordmanagementsystem.service;
 import com.golubovicluka.passwordmanagementsystem.dao.TestDatabaseConnection;
 import com.golubovicluka.passwordmanagementsystem.dao.UserDAO;
 import com.golubovicluka.passwordmanagementsystem.model.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -20,10 +21,12 @@ class AuthServiceTest {
     private static final String VALID_USERNAME = "testUser";
     private static final String VALID_PASSWORD = "TestPassword123!";
     private static final String INVALID_PASSWORD = "wrongpass";
+    private TestDatabaseConnection testConnection;
 
     @BeforeEach
     void setUp() throws SQLException {
-        TestDatabaseConnection testConnection = new TestDatabaseConnection();
+        testConnection = TestDatabaseConnection.getInstance();
+        TestDatabaseConnection.setupForTesting();
 
         try (Connection conn = testConnection.getConnection();
                 Statement stmt = conn.createStatement()) {
@@ -38,14 +41,23 @@ class AuthServiceTest {
                     + ")");
         }
 
-        UserDAO userDAO = new UserDAO(testConnection);
+        UserDAO userDAO = new UserDAO();
         authService = new AuthService(userDAO);
+    }
+
+    @AfterEach
+    void tearDown() {
+        try (Connection conn = testConnection.getConnection();
+                Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS users");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     void validateUser_WithValidCredentials_ShouldReturnUser() throws ExecutionException, InterruptedException {
         authService.registerUser(VALID_USERNAME, VALID_PASSWORD);
-
         User result = authService.validateUser(VALID_USERNAME, VALID_PASSWORD).get();
 
         assertNotNull(result);
@@ -55,7 +67,6 @@ class AuthServiceTest {
     @Test
     void validateUser_WithInvalidPassword_ShouldReturnNull() throws ExecutionException, InterruptedException {
         authService.registerUser(VALID_USERNAME, VALID_PASSWORD);
-
         User result = authService.validateUser(VALID_USERNAME, INVALID_PASSWORD).get();
 
         assertNull(result);
@@ -76,7 +87,6 @@ class AuthServiceTest {
     @Test
     void registerUser_WithExistingUsername_ShouldReturnFalse() {
         authService.registerUser(VALID_USERNAME, VALID_PASSWORD);
-
         boolean result = authService.registerUser(VALID_USERNAME, VALID_PASSWORD);
         assertFalse(result);
     }

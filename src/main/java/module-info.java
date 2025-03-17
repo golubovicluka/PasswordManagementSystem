@@ -15,6 +15,7 @@ module com.golubovicluka.passwordmanagementsystem {
     requires org.kordamp.ikonli.fontawesome5;
     requires org.slf4j;
     requires org.jsoup;
+    requires com.zaxxer.hikari;
 
     opens com.golubovicluka.passwordmanagementsystem to javafx.fxml;
     opens com.golubovicluka.passwordmanagementsystem.controller to javafx.fxml;

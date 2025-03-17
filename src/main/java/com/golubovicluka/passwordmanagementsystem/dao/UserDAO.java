@@ -6,26 +6,10 @@ import java.util.Optional;
 
 /**
  * Data Access Object for User entities.
- * Handles database operations related to users including finding and creating users.
+ * Handles database operations related to users including finding and creating
+ * users.
  */
 public class UserDAO {
-    private final DatabaseConnection databaseConnection;
-
-    /**
-     * Default constructor that initializes a new database connection.
-     */
-    public UserDAO() {
-        this.databaseConnection = new DatabaseConnection();
-    }
-
-    /**
-     * Constructor with dependency injection for database connection.
-     * 
-     * @param databaseConnection The database connection to use
-     */
-    public UserDAO(DatabaseConnection databaseConnection) {
-        this.databaseConnection = databaseConnection;
-    }
 
     /**
      * Finds a user by their username.
@@ -36,7 +20,7 @@ public class UserDAO {
     public Optional<User> findByUsername(String username) {
         String query = "SELECT * FROM users WHERE username = ?";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, username);
@@ -59,14 +43,14 @@ public class UserDAO {
     /**
      * Creates a new user in the database.
      * 
-     * @param username The username for the new user
+     * @param username       The username for the new user
      * @param hashedPassword The hashed password for the new user
      * @return true if user was successfully created, false otherwise
      */
     public boolean createUser(String username, String hashedPassword) {
         String sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);

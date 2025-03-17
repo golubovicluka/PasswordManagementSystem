@@ -27,7 +27,6 @@ public class AuthService {
         this.userDAO = new UserDAO();
     }
 
-    // Add constructor for testing
     public AuthService(UserDAO userDAO) {
         this.userDAO = userDAO;
     }

@@ -54,7 +54,6 @@ public class User {
         this.createdAt = createdAt;
     }
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }

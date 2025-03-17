@@ -14,20 +14,22 @@ import java.util.List;
 
 /**
  * Data Access Object for PasswordEntry entities.
- * Handles database operations related to password entries including retrieving, creating,
+ * Handles database operations related to password entries including retrieving,
+ * creating,
  * updating, and deleting password entries for users.
  */
 public class PasswordEntryDAO {
     private static final Logger logger = LoggerFactory.getLogger(PasswordEntryDAO.class);
-    private final DatabaseConnection databaseConnection = new DatabaseConnection();
 
     /**
      * Retrieves all password entries for a specific user as an ObservableList.
      * This method is specifically designed for JavaFX UI binding.
      *
      * @param userId The ID of the user whose password entries to retrieve
-     * @return An ObservableList of PasswordEntry objects belonging to the specified user
-     * @throws DatabaseException If there is an error retrieving the password entries
+     * @return An ObservableList of PasswordEntry objects belonging to the specified
+     *         user
+     * @throws DatabaseException If there is an error retrieving the password
+     *                           entries
      */
     public ObservableList<PasswordEntry> getAllPasswordEntriesForUser(int userId) {
         ObservableList<PasswordEntry> entries = FXCollections.observableArrayList();
@@ -36,7 +38,7 @@ public class PasswordEntryDAO {
                 "LEFT JOIN categories c ON pe.category_id = c.category_id " +
                 "WHERE pe.user_id = ?";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, userId);
@@ -57,7 +59,8 @@ public class PasswordEntryDAO {
      *
      * @param userId The ID of the user whose password entries to retrieve
      * @return A List of PasswordEntry objects belonging to the specified user
-     * @throws DatabaseException If there is an error retrieving the password entries
+     * @throws DatabaseException If there is an error retrieving the password
+     *                           entries
      */
     public List<PasswordEntry> getPasswordsForUser(int userId) {
         List<PasswordEntry> passwords = new ArrayList<>();
@@ -67,7 +70,7 @@ public class PasswordEntryDAO {
                 "LEFT JOIN categories c ON p.category_id = c.category_id " +
                 "WHERE p.user_id = ?";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, userId);
@@ -86,7 +89,7 @@ public class PasswordEntryDAO {
     /**
      * Adds a new password entry to the database for a specific user.
      *
-     * @param entry The PasswordEntry object to add
+     * @param entry  The PasswordEntry object to add
      * @param userId The ID of the user who owns this password entry
      * @return true if the password entry was successfully added, false otherwise
      * @throws DatabaseException If there is an error adding the password entry
@@ -94,7 +97,7 @@ public class PasswordEntryDAO {
     public boolean addPasswordEntry(PasswordEntry entry, int userId) {
         String query = "INSERT INTO password_entries (user_id, website, username, password, category_id) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, userId);
@@ -125,7 +128,7 @@ public class PasswordEntryDAO {
     public boolean updatePasswordEntry(PasswordEntry entry) {
         String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ?";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, entry.getWebsite());
@@ -157,7 +160,7 @@ public class PasswordEntryDAO {
     public boolean deletePasswordEntry(int entryId) {
         String query = "DELETE FROM password_entries WHERE id = ?";
 
-        try (Connection conn = databaseConnection.getConnection();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, entryId);
@@ -171,7 +174,7 @@ public class PasswordEntryDAO {
     /**
      * Maps a database result set to a PasswordEntry object.
      *
-     * @param rs The ResultSet containing password entry data
+     * @param rs     The ResultSet containing password entry data
      * @param userId The ID of the user who owns this password entry
      * @return A PasswordEntry object populated with data from the ResultSet
      * @throws SQLException If there is an error accessing the ResultSet

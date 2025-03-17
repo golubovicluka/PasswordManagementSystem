@@ -1,90 +1,83 @@
 package com.golubovicluka.passwordmanagementsystem.dao;
 
 import com.golubovicluka.passwordmanagementsystem.model.User;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.sql.Statement;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class UserDAOTest {
 
-    @Mock
-    private DatabaseConnection databaseConnection;
-
-    @Mock
-    private Connection connection;
-
-    @Mock
-    private PreparedStatement preparedStatement;
-
-    @Mock
-    private ResultSet resultSet;
-
     private UserDAO userDAO;
+    private TestDatabaseConnection testConnection;
 
     @BeforeEach
     void setUp() throws SQLException {
-        userDAO = new UserDAO(databaseConnection);
-        when(databaseConnection.getConnection()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        testConnection = TestDatabaseConnection.getInstance();
+        TestDatabaseConnection.setupForTesting();
+
+        try (Connection conn = testConnection.getConnection();
+                Statement stmt = conn.createStatement()) {
+
+            stmt.execute("DROP TABLE IF EXISTS users");
+            stmt.execute("CREATE TABLE users ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY,"
+                    + "username VARCHAR(50) UNIQUE NOT NULL,"
+                    + "password_hash VARCHAR(255) NOT NULL,"
+                    + "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+                    + ")");
+
+            stmt.execute("INSERT INTO users (username, password_hash, created_at) VALUES "
+                    + "('testUser', 'hashedPassword', CURRENT_TIMESTAMP)");
+        }
+
+        userDAO = new UserDAO();
+    }
+
+    @AfterEach
+    void tearDown() throws SQLException {
+        try (Connection conn = testConnection.getConnection();
+                Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS users");
+        }
     }
 
     @Test
-    void findByUsername_WhenUserExists_ShouldReturnUser() throws SQLException {
-        String username = "testUser";
-        String passwordHash = "hashedPassword";
-
-        when(preparedStatement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(true);
-        when(resultSet.getInt("id")).thenReturn(1);
-        when(resultSet.getString("username")).thenReturn(username);
-        when(resultSet.getString("password_hash")).thenReturn(passwordHash);
-        when(resultSet.getTimestamp("created_at")).thenReturn(java.sql.Timestamp.valueOf(LocalDateTime.now()));
-
-        Optional<User> result = userDAO.findByUsername(username);
+    void findByUsername_WhenUserExists_ShouldReturnUser() {
+        Optional<User> result = userDAO.findByUsername("testUser");
 
         assertTrue(result.isPresent());
-        assertEquals(username, result.get().getUsername());
-        assertEquals(passwordHash, result.get().getPasswordHash());
+        assertEquals("testUser", result.get().getUsername());
+        assertEquals("hashedPassword", result.get().getPasswordHash());
     }
 
     @Test
-    void findByUsername_WhenUserDoesNotExist_ShouldReturnEmpty() throws SQLException {
-        when(preparedStatement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(false);
-
+    void findByUsername_WhenUserDoesNotExist_ShouldReturnEmpty() {
         Optional<User> result = userDAO.findByUsername("nonexistent");
 
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void createUser_WhenSuccessful_ShouldReturnTrue() throws SQLException {
-        when(preparedStatement.executeUpdate()).thenReturn(1);
-
-        boolean result = userDAO.createUser("newUser", "hashedPassword");
+    void createUser_WhenSuccessful_ShouldReturnTrue() {
+        boolean result = userDAO.createUser("newUser", "newHashedPassword");
 
         assertTrue(result);
+
+        Optional<User> createdUser = userDAO.findByUsername("newUser");
+        assertTrue(createdUser.isPresent());
+        assertEquals("newHashedPassword", createdUser.get().getPasswordHash());
     }
 
     @Test
-    void createUser_WhenDatabaseError_ShouldReturnFalse() throws SQLException {
-        when(preparedStatement.executeUpdate()).thenThrow(new SQLException("Database error"));
-
-        boolean result = userDAO.createUser("newUser", "hashedPassword");
+    void createUser_WhenDuplicateUsername_ShouldReturnFalse() {
+        boolean result = userDAO.createUser("testUser", "anotherPassword");
 
         assertFalse(result);
     }
