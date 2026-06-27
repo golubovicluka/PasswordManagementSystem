@@ -89,9 +89,6 @@ public class PasswordsController {
     /** Observable list containing all password entries */
     private ObservableList<PasswordEntry> masterData;
     
-    /** Filtered list for search functionality */
-    private FilteredList<PasswordEntry> filteredData;
-    
     /** Data access object for password entries */
     private final PasswordEntryDAO passwordEntryDAO;
     
@@ -123,19 +120,10 @@ public class PasswordsController {
         setupTableColumns();
         setupButtonHandlers();
         masterData = FXCollections.observableArrayList();
-        filteredData = new FilteredList<>(masterData, p -> true);
-        setupSearch();
-        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
+        filteredEntries = new FilteredList<>(masterData, p -> true);
+        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredEntries);
         sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
         passwordTable.setItems(sortedData);
-
-        categoryColumn.setCellValueFactory(cellData -> {
-            Category category = cellData.getValue().getCategory();
-            return new SimpleStringProperty(category != null ? category.getName() : "");
-        });
-
-        filteredEntries = new FilteredList<>(masterData);
-        passwordTable.setItems(filteredEntries);
 
         loadCategoryFilters();
 
@@ -433,26 +421,6 @@ public class PasswordsController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Sets up the search functionality to filter password entries based on user input.
-     */
-    private void setupSearch() {
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(passwordEntry -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                return passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter) ||
-                        passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter) ||
-                        (passwordEntry.getCategory() != null &&
-                                passwordEntry.getCategory().getName().toLowerCase().contains(lowerCaseFilter));
-            });
-        });
     }
 
     /**
