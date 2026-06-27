@@ -12,6 +12,7 @@ import javafx.scene.input.KeyCode;
 
 import java.io.IOException;
 import com.golubovicluka.passwordmanagementsystem.service.AuthService;
+import com.golubovicluka.passwordmanagementsystem.service.VaultCrypto;
 import javafx.application.Platform;
 import com.golubovicluka.passwordmanagementsystem.model.User;
 
@@ -113,6 +114,7 @@ public class LoginController {
         authService.validateUser(username, password)
                 .thenAccept(user -> Platform.runLater(() -> {
                     if (user != null) {
+                        VaultCrypto.setMasterPassword(password, username);
                         loggedInUser = user;
                         try {
                             FXMLLoader loader = new FXMLLoader(getClass().getResource(

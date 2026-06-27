@@ -580,7 +580,7 @@ public class PasswordsController {
         confirmDialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 try {
-                    passwordEntryDAO.deletePasswordEntry(entry.getId());
+                    passwordEntryDAO.deletePasswordEntry(entry.getId(), currentUserId);
                     masterData.remove(entry);
                 } catch (DatabaseException e) {
                     Alert errorAlert = new Alert(Alert.AlertType.ERROR);

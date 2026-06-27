@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Random;
+import java.security.SecureRandom;
 
 /**
  * Controller class for the user registration view of the Password Management
@@ -203,6 +203,13 @@ public class RegisterController {
             return;
         }
 
+        if (!isStrongPassword(password)) {
+            showError("Password must be at least 12 characters and include upper, lower, number, and special character");
+            passwordField.getStyleClass().add("error-field");
+            confirmPasswordField.getStyleClass().add("error-field");
+            return;
+        }
+
         try {
             if (authService.registerUser(username, password)) {
                 Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
@@ -289,7 +296,7 @@ public class RegisterController {
         String specialChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
 
         StringBuilder password = new StringBuilder();
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
 
         password.append(upperCase.charAt(random.nextInt(upperCase.length())));
         password.append(lowerCase.charAt(random.nextInt(lowerCase.length())));
@@ -310,5 +317,22 @@ public class RegisterController {
         }
 
         return new String(passwordArray);
+    }
+
+    private boolean isStrongPassword(String password) {
+        if (password.length() < 12) {
+            return false;
+        }
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isLowerCase(c)) hasLower = true;
+            else if (Character.isDigit(c)) hasDigit = true;
+            else hasSpecial = true;
+        }
+        return hasUpper && hasLower && hasDigit && hasSpecial;
     }
 }

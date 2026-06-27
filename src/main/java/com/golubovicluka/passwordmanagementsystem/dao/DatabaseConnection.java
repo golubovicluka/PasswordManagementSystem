@@ -18,9 +18,10 @@ public class DatabaseConnection {
     private static DatabaseConnection instance;
     private HikariDataSource dataSource;
 
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/passwordmanagement";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "root";
+  private static final String JDBC_URL = System.getenv().getOrDefault(
+      "DB_URL", "jdbc:mysql://localhost:3306/passwordmanagement");
+  private static final String DB_USER = System.getenv().getOrDefault("DB_USER", "root");
+  private static final String DB_PASSWORD = System.getenv().getOrDefault("DB_PASSWORD", "root");
     private static final int MAX_POOL_SIZE = 10;
 
     /**

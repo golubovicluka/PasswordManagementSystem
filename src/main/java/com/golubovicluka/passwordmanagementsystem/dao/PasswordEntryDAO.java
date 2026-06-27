@@ -5,12 +5,13 @@ import com.golubovicluka.passwordmanagementsystem.model.PasswordEntry;
 import com.golubovicluka.passwordmanagementsystem.model.Category;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.golubovicluka.passwordmanagementsystem.service.VaultCrypto;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Data Access Object for PasswordEntry entities.
@@ -103,7 +104,7 @@ public class PasswordEntryDAO {
             stmt.setInt(1, userId);
             stmt.setString(2, entry.getWebsite());
             stmt.setString(3, entry.getUsername());
-            stmt.setString(4, entry.getPassword());
+            stmt.setString(4, VaultCrypto.encrypt(entry.getPassword()));
 
             if (entry.getCategory() != null) {
                 stmt.setInt(5, entry.getCategory().getId());
@@ -125,15 +126,15 @@ public class PasswordEntryDAO {
      * @return true if the password entry was successfully updated, false otherwise
      * @throws DatabaseException If there is an error updating the password entry
      */
-    public boolean updatePasswordEntry(PasswordEntry entry) {
-        String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ?";
+    public boolean updatePasswordEntry(PasswordEntry entry, int userId) {
+        String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ? AND user_id = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, entry.getWebsite());
             stmt.setString(2, entry.getUsername());
-            stmt.setString(3, entry.getPassword());
+            stmt.setString(3, VaultCrypto.encrypt(entry.getPassword()));
 
             if (entry.getCategory() != null) {
                 stmt.setInt(4, entry.getCategory().getId());
@@ -142,6 +143,7 @@ public class PasswordEntryDAO {
             }
 
             stmt.setInt(5, entry.getId());
+            stmt.setInt(6, userId);
 
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
@@ -157,13 +159,14 @@ public class PasswordEntryDAO {
      * @return true if the password entry was successfully deleted, false otherwise
      * @throws DatabaseException If there is an error deleting the password entry
      */
-    public boolean deletePasswordEntry(int entryId) {
-        String query = "DELETE FROM password_entries WHERE id = ?";
+    public boolean deletePasswordEntry(int entryId, int userId) {
+        String query = "DELETE FROM password_entries WHERE id = ? AND user_id = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, entryId);
+            stmt.setInt(2, userId);
             return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             logger.error("Error deleting password entry {}: {}", entryId, e.getMessage());
@@ -194,7 +197,7 @@ public class PasswordEntryDAO {
                 rs.getInt("user_id"),
                 rs.getString("website"),
                 rs.getString("username"),
-                rs.getString("password"),
+                VaultCrypto.decrypt(rs.getString("password")),
                 category,
                 null);
     }

@@ -282,7 +282,7 @@ public class AddPasswordController {
             editingEntry.setPassword(password);
             editingEntry.setCategory(selectedCategory);
 
-            if (passwordEntryDAO.updatePasswordEntry(editingEntry)) {
+            if (passwordEntryDAO.updatePasswordEntry(editingEntry, passwordsController.getCurrentUserId())) {
                 messageLabel.setText("Password updated successfully!");
                 messageLabel.setStyle("-fx-text-fill: green;");
                 new Thread(() -> {
