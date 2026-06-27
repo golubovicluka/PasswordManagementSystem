@@ -144,6 +144,78 @@ public class PasswordsController {
      */
     private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        usernameColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
+            private final Tooltip copyTooltip = new Tooltip("Click to copy username");
+
+            {
+                setTooltip(copyTooltip);
+                getStyleClass().add("password-column");
+
+                setOnMouseClicked(event -> {
+                    if (getItem() == null || getItem().isEmpty()) {
+                        return;
+                    }
+
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(getItem());
+                    clipboard.setContent(content);
+
+                    Popup popup = new Popup();
+                    popup.setAutoHide(true);
+
+                    VBox container = new VBox();
+                    container.getStylesheets()
+                            .add(getClass()
+                                    .getResource("/com/golubovicluka/passwordmanagementsystem/styles/style.css")
+                                    .toExternalForm());
+                    container.getStyleClass().add("copy-notification");
+                    container.setAlignment(Pos.CENTER);
+                    container.setMinWidth(250);
+                    container.setMinHeight(50);
+
+                    HBox contentBox = new HBox(10);
+                    contentBox.getStyleClass().add("content-box");
+                    contentBox.setAlignment(Pos.CENTER);
+
+                    FontIcon checkIcon = new FontIcon(FontAwesomeSolid.CHECK_CIRCLE);
+                    checkIcon.getStyleClass().add("copy-notification-icon");
+
+                    Label popupLabel = new Label("Username copied to clipboard!");
+                    popupLabel.getStyleClass().add("copy-notification-label");
+
+                    contentBox.getChildren().addAll(checkIcon, popupLabel);
+                    container.getChildren().add(contentBox);
+                    popup.getContent().add(container);
+
+                    Point2D point = localToScreen(event.getX(), event.getY());
+                    popup.show(getScene().getWindow(),
+                            point.getX() - 125,
+                            point.getY() - 70);
+
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        Platform.runLater(popup::hide);
+                    }).start();
+                });
+            }
+
+            @Override
+            protected void updateItem(String username, boolean empty) {
+                super.updateItem(username, empty);
+                if (empty || username == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(username);
+                    setTooltip(copyTooltip);
+                }
+            }
+        });
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         passwordColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
             private boolean isRevealed = false;
