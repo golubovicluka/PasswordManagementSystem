@@ -43,8 +43,13 @@ import javafx.geometry.Point2D;
  */
 public class PasswordsController {
     /** Default favicon image used when website favicon cannot be loaded */
-    private final Image DEFAULT_FAVICON = new Image(
-            getClass().getResourceAsStream("/com/golubovicluka/passwordmanagementsystem/images/default-favicon.png"));
+    private final Image DEFAULT_FAVICON = loadDefaultFavicon();
+
+    private Image loadDefaultFavicon() {
+        var stream = getClass().getResourceAsStream(
+                "/com/golubovicluka/passwordmanagementsystem/images/default-favicon.png");
+        return stream != null ? new Image(stream) : null;
+    }
 
     /** Table view displaying password entries */
     @FXML
@@ -89,9 +94,6 @@ public class PasswordsController {
     /** Observable list containing all password entries */
     private ObservableList<PasswordEntry> masterData;
     
-    /** Filtered list for search functionality */
-    private FilteredList<PasswordEntry> filteredData;
-    
     /** Data access object for password entries */
     private final PasswordEntryDAO passwordEntryDAO;
     
@@ -123,19 +125,10 @@ public class PasswordsController {
         setupTableColumns();
         setupButtonHandlers();
         masterData = FXCollections.observableArrayList();
-        filteredData = new FilteredList<>(masterData, p -> true);
-        setupSearch();
-        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredData);
+        filteredEntries = new FilteredList<>(masterData, p -> true);
+        SortedList<PasswordEntry> sortedData = new SortedList<>(filteredEntries);
         sortedData.comparatorProperty().bind(passwordTable.comparatorProperty());
         passwordTable.setItems(sortedData);
-
-        categoryColumn.setCellValueFactory(cellData -> {
-            Category category = cellData.getValue().getCategory();
-            return new SimpleStringProperty(category != null ? category.getName() : "");
-        });
-
-        filteredEntries = new FilteredList<>(masterData);
-        passwordTable.setItems(filteredEntries);
 
         loadCategoryFilters();
 
@@ -151,9 +144,82 @@ public class PasswordsController {
      */
     private void setupTableColumns() {
         usernameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        usernameColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
+            private final Tooltip copyTooltip = new Tooltip("Click to copy username");
+
+            {
+                setTooltip(copyTooltip);
+                getStyleClass().add("password-column");
+
+                setOnMouseClicked(event -> {
+                    if (getItem() == null || getItem().isEmpty()) {
+                        return;
+                    }
+
+                    final Clipboard clipboard = Clipboard.getSystemClipboard();
+                    final ClipboardContent content = new ClipboardContent();
+                    content.putString(getItem());
+                    clipboard.setContent(content);
+
+                    Popup popup = new Popup();
+                    popup.setAutoHide(true);
+
+                    VBox container = new VBox();
+                    container.getStylesheets()
+                            .add(getClass()
+                                    .getResource("/com/golubovicluka/passwordmanagementsystem/styles/style.css")
+                                    .toExternalForm());
+                    container.getStyleClass().add("copy-notification");
+                    container.setAlignment(Pos.CENTER);
+                    container.setMinWidth(250);
+                    container.setMinHeight(50);
+
+                    HBox contentBox = new HBox(10);
+                    contentBox.getStyleClass().add("content-box");
+                    contentBox.setAlignment(Pos.CENTER);
+
+                    FontIcon checkIcon = new FontIcon(FontAwesomeSolid.CHECK_CIRCLE);
+                    checkIcon.getStyleClass().add("copy-notification-icon");
+
+                    Label popupLabel = new Label("Username copied to clipboard!");
+                    popupLabel.getStyleClass().add("copy-notification-label");
+
+                    contentBox.getChildren().addAll(checkIcon, popupLabel);
+                    container.getChildren().add(contentBox);
+                    popup.getContent().add(container);
+
+                    Point2D point = localToScreen(event.getX(), event.getY());
+                    popup.show(getScene().getWindow(),
+                            point.getX() - 125,
+                            point.getY() - 70);
+
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                        Platform.runLater(popup::hide);
+                    }).start();
+                });
+            }
+
+            @Override
+            protected void updateItem(String username, boolean empty) {
+                super.updateItem(username, empty);
+                if (empty || username == null) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(username);
+                    setTooltip(copyTooltip);
+                }
+            }
+        });
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         passwordColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
             private boolean isRevealed = false;
+            private PasswordEntry boundEntry = null;
             private final Tooltip hiddenTooltip = new Tooltip("Click to reveal password");
             private final Tooltip revealedTooltip = new Tooltip("Click to hide password • Click with CTRL to copy");
 
@@ -224,7 +290,15 @@ public class PasswordsController {
                 if (empty || password == null) {
                     setText(null);
                     setTooltip(null);
+                    isRevealed = false;
+                    boundEntry = null;
                     return;
+                }
+
+                PasswordEntry entry = getTableRow() != null ? getTableRow().getItem() : null;
+                if (entry != boundEntry) {
+                    isRevealed = false;
+                    boundEntry = entry;
                 }
 
                 if (isRevealed) {
@@ -354,16 +428,18 @@ public class PasswordsController {
                 Image favicon = new Image(faviconUrl, true);
                 favicon.progressProperty().addListener((obs, oldProgress, newProgress) -> {
                     if (newProgress.doubleValue() == 1.0) {
-                        imageView.setImage(favicon);
+                        Platform.runLater(() -> imageView.setImage(favicon));
                     }
                 });
                 favicon.errorProperty().addListener((obs, oldError, newError) -> {
-                    if (newError) {
-                        imageView.setImage(DEFAULT_FAVICON);
+                    if (newError && DEFAULT_FAVICON != null) {
+                        Platform.runLater(() -> imageView.setImage(DEFAULT_FAVICON));
                     }
                 });
             } catch (Exception e) {
-                imageView.setImage(DEFAULT_FAVICON);
+                if (DEFAULT_FAVICON != null) {
+                    Platform.runLater(() -> imageView.setImage(DEFAULT_FAVICON));
+                }
             }
         }).start();
     }
@@ -433,26 +509,6 @@ public class PasswordsController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Sets up the search functionality to filter password entries based on user input.
-     */
-    private void setupSearch() {
-        searchField.textProperty().addListener((observable, oldValue, newValue) -> {
-            filteredData.setPredicate(passwordEntry -> {
-                if (newValue == null || newValue.isEmpty()) {
-                    return true;
-                }
-
-                String lowerCaseFilter = newValue.toLowerCase();
-
-                return passwordEntry.getWebsite().toLowerCase().contains(lowerCaseFilter) ||
-                        passwordEntry.getUsername().toLowerCase().contains(lowerCaseFilter) ||
-                        (passwordEntry.getCategory() != null &&
-                                passwordEntry.getCategory().getName().toLowerCase().contains(lowerCaseFilter));
-            });
-        });
     }
 
     /**

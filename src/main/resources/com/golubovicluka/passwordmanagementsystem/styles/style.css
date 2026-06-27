@@ -257,6 +257,23 @@
     -fx-border-width: 1px;
 }
 
+.message-label {
+    -fx-text-fill: #666666;
+    -fx-font-size: 13px;
+}
+
+.action-button {
+    -fx-background-color: #2196f3;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 20 10 20;
+    -fx-cursor: hand;
+}
+
+.action-button:hover {
+    -fx-background-color: #1976d2;
+}
+
 .copy-notification {
     -fx-background-color: white;
     -fx-padding: 15px 25px;
