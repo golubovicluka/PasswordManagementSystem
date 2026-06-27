@@ -43,8 +43,13 @@ import javafx.geometry.Point2D;
  */
 public class PasswordsController {
     /** Default favicon image used when website favicon cannot be loaded */
-    private final Image DEFAULT_FAVICON = new Image(
-            getClass().getResourceAsStream("/com/golubovicluka/passwordmanagementsystem/images/default-favicon.png"));
+    private final Image DEFAULT_FAVICON = loadDefaultFavicon();
+
+    private Image loadDefaultFavicon() {
+        var stream = getClass().getResourceAsStream(
+                "/com/golubovicluka/passwordmanagementsystem/images/default-favicon.png");
+        return stream != null ? new Image(stream) : null;
+    }
 
     /** Table view displaying password entries */
     @FXML
@@ -142,6 +147,7 @@ public class PasswordsController {
         passwordColumn.setCellValueFactory(new PropertyValueFactory<>("password"));
         passwordColumn.setCellFactory(column -> new TableCell<PasswordEntry, String>() {
             private boolean isRevealed = false;
+            private PasswordEntry boundEntry = null;
             private final Tooltip hiddenTooltip = new Tooltip("Click to reveal password");
             private final Tooltip revealedTooltip = new Tooltip("Click to hide password • Click with CTRL to copy");
 
@@ -212,7 +218,15 @@ public class PasswordsController {
                 if (empty || password == null) {
                     setText(null);
                     setTooltip(null);
+                    isRevealed = false;
+                    boundEntry = null;
                     return;
+                }
+
+                PasswordEntry entry = getTableRow() != null ? getTableRow().getItem() : null;
+                if (entry != boundEntry) {
+                    isRevealed = false;
+                    boundEntry = entry;
                 }
 
                 if (isRevealed) {
