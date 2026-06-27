@@ -99,7 +99,7 @@ public class PasswordEntryDAO {
         String query = "INSERT INTO password_entries (user_id, website, username, password, category_id) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, userId);
             stmt.setString(2, entry.getWebsite());
@@ -112,7 +112,16 @@ public class PasswordEntryDAO {
                 stmt.setNull(5, java.sql.Types.INTEGER);
             }
 
-            return stmt.executeUpdate() > 0;
+            if (stmt.executeUpdate() > 0) {
+                try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        entry.setId(generatedKeys.getInt(1));
+                        entry.setUserId(userId);
+                    }
+                }
+                return true;
+            }
+            return false;
         } catch (SQLException e) {
             logger.error("Error adding password entry for user {}: {}", userId, e.getMessage());
             throw new DatabaseException("Failed to add password entry", e);
