@@ -428,17 +428,17 @@ public class PasswordsController {
                 Image favicon = new Image(faviconUrl, true);
                 favicon.progressProperty().addListener((obs, oldProgress, newProgress) -> {
                     if (newProgress.doubleValue() == 1.0) {
-                        imageView.setImage(favicon);
+                        Platform.runLater(() -> imageView.setImage(favicon));
                     }
                 });
                 favicon.errorProperty().addListener((obs, oldError, newError) -> {
                     if (newError && DEFAULT_FAVICON != null) {
-                        imageView.setImage(DEFAULT_FAVICON);
+                        Platform.runLater(() -> imageView.setImage(DEFAULT_FAVICON));
                     }
                 });
             } catch (Exception e) {
                 if (DEFAULT_FAVICON != null) {
-                    imageView.setImage(DEFAULT_FAVICON);
+                    Platform.runLater(() -> imageView.setImage(DEFAULT_FAVICON));
                 }
             }
         }).start();
