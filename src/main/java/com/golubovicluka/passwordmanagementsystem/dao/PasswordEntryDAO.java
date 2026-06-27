@@ -136,6 +136,11 @@ public class PasswordEntryDAO {
      * @throws DatabaseException If there is an error updating the password entry
      */
     public boolean updatePasswordEntry(PasswordEntry entry, int userId) {
+        if (entry.getUserId() != 0 && entry.getUserId() != userId) {
+            logger.warn("Refusing to update password entry {} for user {}", entry.getId(), userId);
+            return false;
+        }
+
         String query = "UPDATE password_entries SET website = ?, username = ?, password = ?, category_id = ? WHERE id = ? AND user_id = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -169,6 +174,11 @@ public class PasswordEntryDAO {
      * @throws DatabaseException If there is an error deleting the password entry
      */
     public boolean deletePasswordEntry(int entryId, int userId) {
+        if (userId <= 0) {
+            logger.warn("Refusing to delete password entry {} without a valid user id", entryId);
+            return false;
+        }
+
         String query = "DELETE FROM password_entries WHERE id = ? AND user_id = ?";
 
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
