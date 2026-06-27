@@ -360,12 +360,14 @@ public class PasswordsController {
                     }
                 });
                 favicon.errorProperty().addListener((obs, oldError, newError) -> {
-                    if (newError) {
+                    if (newError && DEFAULT_FAVICON != null) {
                         imageView.setImage(DEFAULT_FAVICON);
                     }
                 });
             } catch (Exception e) {
-                imageView.setImage(DEFAULT_FAVICON);
+                if (DEFAULT_FAVICON != null) {
+                    imageView.setImage(DEFAULT_FAVICON);
+                }
             }
         }).start();
     }
