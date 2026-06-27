@@ -3,6 +3,8 @@ package com.golubovicluka.passwordmanagementsystem.dao;
 import com.golubovicluka.passwordmanagementsystem.model.User;
 import java.sql.*;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Data Access Object for User entities.
@@ -10,6 +12,7 @@ import java.util.Optional;
  * users.
  */
 public class UserDAO {
+    private static final Logger logger = LoggerFactory.getLogger(UserDAO.class);
 
     /**
      * Finds a user by their username.
@@ -35,7 +38,7 @@ public class UserDAO {
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error finding user by username {}: {}", username, e.getMessage());
         }
         return Optional.empty();
     }
@@ -60,7 +63,7 @@ public class UserDAO {
         } catch (SQLIntegrityConstraintViolationException e) {
             return false;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error creating user {}: {}", username, e.getMessage());
             return false;
         }
     }
