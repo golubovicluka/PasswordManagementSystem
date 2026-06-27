@@ -19,6 +19,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,30 +128,34 @@ public class RegisterController {
      */
     private void loadPasswordTips() {
         passwordHints.setText("Loading password tips...");
-        String url = "https://support.microsoft.com/en-us/account-billing/how-to-create-a-strong-password-for-your-microsoft-account-f67e4ddd-0dbe-cd75-cebe-0cfda3cf7386";
-        try {
-            Document doc = Jsoup.connect(url)
-                    .userAgent(
-                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
-                    .get();
+        Thread tipsThread = new Thread(() -> {
+            String url = "https://support.microsoft.com/en-us/account-billing/how-to-create-a-strong-password-for-your-microsoft-account-f67e4ddd-0dbe-cd75-cebe-0cfda3cf7386";
+            try {
+                Document doc = Jsoup.connect(url)
+                        .userAgent(
+                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+                        .get();
 
-            String intro = doc.select("section.ocpIntroduction > p:not(:empty)").first().text();
+                String intro = doc.select("section.ocpIntroduction > p:not(:empty)").first().text();
 
-            Elements tips = doc.select("section.ocpIntroduction > ul > li > p");
+                Elements tips = doc.select("section.ocpIntroduction > ul > li > p");
 
-            StringBuilder tipsText = new StringBuilder(intro);
-            tipsText.append("\n\n");
+                StringBuilder tipsText = new StringBuilder(intro);
+                tipsText.append("\n\n");
 
-            for (Element tip : tips) {
-                tipsText.append("• ").append(tip.text()).append("\n");
+                for (Element tip : tips) {
+                    tipsText.append("• ").append(tip.text()).append("\n");
+                }
+
+                Platform.runLater(() -> passwordHints.setText(tipsText.toString()));
+
+            } catch (IOException e) {
+                log.warn("Error fetching password tips: {}", e.getMessage());
+                Platform.runLater(() -> passwordHints.setText(getFallbackPasswordTips()));
             }
-
-            passwordHints.setText(tipsText.toString());
-
-        } catch (IOException e) {
-            passwordHints.setText(getFallbackPasswordTips());
-            System.err.println("Error fetching data: " + e.getMessage());
-        }
+        });
+        tipsThread.setDaemon(true);
+        tipsThread.start();
     }
 
     /**
